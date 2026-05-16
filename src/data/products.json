@@ -1,0 +1,205 @@
+[
+  {
+    "id": "1",
+    "slug": "daikin-1-5hp-inverter",
+    "name": "Daikin 1.5HP Inverter Split Type",
+    "brand": "Daikin",
+    "category": "residential",
+    "subcategory": "Split Type",
+    "price": 38000,
+    "priceWithInstallation": 43000,
+    "images": [],
+    "specs": {
+      "horsepower": "1.5HP",
+      "coolingCapacity": "5.0 kW",
+      "energyEfficiency": "5-Star Inverter",
+      "warranty": "5 years compressor, 1 year parts & labor"
+    },
+    "inStock": true,
+    "badge": "Best Seller",
+    "description": "The Daikin 1.5HP Inverter Split Type aircon delivers superior energy efficiency with its inverter technology. Ideal for medium-sized rooms (20–25 sqm). Features auto-restart, sleep mode, and a self-cleaning filter."
+  },
+  {
+    "id": "9",
+    "slug": "daikin-amihan-0-8hp",
+    "name": "Daikin Amihan 0.8HP Inverter (FTKE-AVA)",
+    "brand": "Daikin",
+    "category": "residential",
+    "subcategory": "Split Type",
+    "price": 20000,
+    "priceWithInstallation": 25000,
+    "images": [],
+    "specs": {
+      "horsepower": "0.8HP",
+      "coolingCapacity": "2.0 kW",
+      "energyEfficiency": "5 CSPF · Inverter · R-32",
+      "warranty": "5yr compressor · 3yr PCB · 1yr parts & labor"
+    },
+    "inStock": true,
+    "badge": "New",
+    "description": "Daikin Amihan FTKE-AVA 0.8HP — Daikin's newest family aircon: ginhawang pang-family, affordable, at sure quality! All Voltage Guard protects against power fluctuations. R-32 eco-friendly refrigerant. Japan Quality. 5-star CSPF energy rating. Ideal for rooms up to 12 sqm."
+  },
+  {
+    "id": "10",
+    "slug": "daikin-amihan-1hp",
+    "name": "Daikin Amihan 1HP Inverter (FTKE-AVA)",
+    "brand": "Daikin",
+    "category": "residential",
+    "subcategory": "Split Type",
+    "price": 25000,
+    "priceWithInstallation": 30000,
+    "images": [],
+    "specs": {
+      "horsepower": "1HP",
+      "coolingCapacity": "2.6 kW",
+      "energyEfficiency": "5 CSPF · Inverter · R-32",
+      "warranty": "5yr compressor · 3yr PCB · 1yr parts & labor"
+    },
+    "inStock": true,
+    "badge": "New",
+    "description": "Daikin Amihan FTKE-AVA 1HP — Daikin's newest family aircon: ginhawang pang-family, affordable, at sure quality! All Voltage Guard protects against power fluctuations. R-32 eco-friendly refrigerant. Japan Quality. 5-star CSPF energy rating. Ideal for rooms up to 15 sqm."
+  },
+  {
+    "id": "11",
+    "slug": "daikin-amihan-1-5hp",
+    "name": "Daikin Amihan 1.5HP Inverter (FTKE-AVA)",
+    "brand": "Daikin",
+    "category": "residential",
+    "subcategory": "Split Type",
+    "price": 32000,
+    "priceWithInstallation": 37000,
+    "images": [],
+    "specs": {
+      "horsepower": "1.5HP",
+      "coolingCapacity": "4.0 kW",
+      "energyEfficiency": "5 CSPF · Inverter · R-32",
+      "warranty": "5yr compressor · 3yr PCB · 1yr parts & labor"
+    },
+    "inStock": true,
+    "badge": "New",
+    "description": "Daikin Amihan FTKE-AVA 1.5HP — Daikin's newest family aircon: ginhawang pang-family, affordable, at sure quality! All Voltage Guard protects against power fluctuations. R-32 eco-friendly refrigerant. Japan Quality. 5-star CSPF energy rating. Ideal for rooms up to 22 sqm."
+  },
+  {
+    "id": "2",
+    "slug": "carrier-1hp-split",
+    "name": "Carrier 1HP Standard Split Type",
+    "brand": "Carrier",
+    "category": "residential",
+    "subcategory": "Split Type",
+    "price": 22000,
+    "priceWithInstallation": 27000,
+    "images": [],
+    "specs": {
+      "horsepower": "1HP",
+      "coolingCapacity": "2.6 kW",
+      "energyEfficiency": "3-Star",
+      "warranty": "3 years compressor, 1 year parts & labor"
+    },
+    "inStock": true,
+    "description": "Carrier 1HP Standard Split Type — reliable, affordable, and easy to maintain. Perfect for small rooms (up to 15 sqm). Carrier is a trusted name in HVAC worldwide."
+  },
+  {
+    "id": "3",
+    "slug": "midea-2hp-inverter",
+    "name": "Midea 2HP Inverter Split Type",
+    "brand": "Midea",
+    "category": "residential",
+    "subcategory": "Split Type",
+    "price": 34000,
+    "priceWithInstallation": 39500,
+    "images": [],
+    "specs": {
+      "horsepower": "2HP",
+      "coolingCapacity": "6.0 kW",
+      "energyEfficiency": "5-Star Inverter",
+      "warranty": "5 years compressor, 1 year parts & labor"
+    },
+    "inStock": true,
+    "badge": "New",
+    "description": "Midea 2HP Inverter aircon with Wi-Fi control. Ideal for large rooms (25–35 sqm). Features turbo cooling, quiet mode, and smart home compatibility."
+  },
+  {
+    "id": "4",
+    "slug": "panasonic-1hp-window",
+    "name": "Panasonic 1HP Window Type",
+    "brand": "Panasonic",
+    "category": "residential",
+    "subcategory": "Window Type",
+    "price": 15000,
+    "priceWithInstallation": 18500,
+    "images": [],
+    "specs": {
+      "horsepower": "1HP",
+      "coolingCapacity": "2.5 kW",
+      "energyEfficiency": "2-Star",
+      "warranty": "3 years compressor, 1 year parts & labor"
+    },
+    "inStock": true,
+    "description": "Panasonic 1HP Window Type — budget-friendly cooling for small rooms. Easy installation, simple controls, and dependable Panasonic quality."
+  },
+  {
+    "id": "5",
+    "slug": "lg-1-5hp-dual-inverter",
+    "name": "LG 1.5HP Dual Inverter",
+    "brand": "LG",
+    "category": "residential",
+    "subcategory": "Split Type",
+    "price": 42000,
+    "priceWithInstallation": 47000,
+    "images": [],
+    "specs": {
+      "horsepower": "1.5HP",
+      "coolingCapacity": "5.0 kW",
+      "energyEfficiency": "5-Star Dual Inverter",
+      "warranty": "10 years compressor, 1 year parts & labor"
+    },
+    "inStock": true,
+    "badge": "Best Seller",
+    "description": "LG's Dual Inverter compressor delivers 40% faster cooling and up to 70% energy savings vs standard units. Ideal for 20–25 sqm rooms. ThinQ Wi-Fi control included."
+  },
+  {
+    "id": "6",
+    "slug": "daikin-2-5hp-cassette",
+    "name": "Daikin 2.5HP Cassette Type",
+    "brand": "Daikin",
+    "category": "commercial",
+    "subcategory": "Cassette",
+    "price": 85000,
+    "priceWithInstallation": 96000,
+    "images": [],
+    "specs": {
+      "horsepower": "2.5HP",
+      "coolingCapacity": "7.1 kW",
+      "energyEfficiency": "5-Star Inverter",
+      "warranty": "5 years compressor, 1 year parts & labor"
+    },
+    "inStock": true,
+    "description": "Daikin 2.5HP Ceiling Cassette — 4-way airflow for even distribution across the room. Ideal for commercial spaces, offices, and shops (35–50 sqm). Requires false ceiling for installation."
+  },
+  {
+    "id": "7",
+    "slug": "copper-tube-1-4",
+    "name": "Copper Tube 1/4\" x 50ft",
+    "brand": "Generic",
+    "category": "hvac-supplies",
+    "subcategory": "Copper Tube",
+    "price": 1200,
+    "images": [],
+    "specs": {},
+    "inStock": true,
+    "description": "High-quality 1/4\" copper tube for refrigerant lines. 50-foot roll. Compatible with all split-type aircon installations."
+  },
+  {
+    "id": "8",
+    "slug": "vacuum-pump-2stage",
+    "name": "Two-Stage Vacuum Pump 3CFM",
+    "brand": "Generic",
+    "category": "tools",
+    "subcategory": "Vacuum Pump",
+    "price": 4500,
+    "images": [],
+    "specs": {},
+    "inStock": true,
+    "description": "Professional two-stage vacuum pump for HVAC technicians. 3 CFM, 1/4HP motor. Removes moisture and non-condensables before charging refrigerant."
+  }
+]
