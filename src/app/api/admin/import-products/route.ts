@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/adminAuth';
-
-const prisma = new PrismaClient();
 
 export const dynamic = 'force-dynamic';
 
