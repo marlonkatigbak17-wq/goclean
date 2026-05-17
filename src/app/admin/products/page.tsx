@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Plus, Pencil, Trash2, Upload, X, Check, PackageX, Package } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, X, Check, PackageX, Package, FileSpreadsheet, Download } from 'lucide-react';
 
 type ProductSpecs = {
   horsepower?: string;
@@ -57,7 +57,9 @@ export default function AdminProductsPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [toast, setToast] = useState('');
+  const [importing, setImporting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const importRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -183,6 +185,29 @@ export default function AdminProductsPage() {
     await fetchProducts();
   }
 
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const res = await fetch('/api/admin/import-products', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(`Import failed: ${data.error}`);
+      } else {
+        await fetchProducts();
+        const msg = `Imported: ${data.created} added, ${data.updated} updated${data.errors.length ? `, ${data.errors.length} errors` : ''}`;
+        showToast(msg);
+      }
+    } catch {
+      showToast('Import failed — check your file');
+    }
+    setImporting(false);
+    e.target.value = '';
+  }
+
   function updateSpec(key: keyof ProductSpecs, value: string) {
     if (!editProduct) return;
     setEditProduct({ ...editProduct, specs: { ...editProduct.specs, [key]: value } });
@@ -195,12 +220,28 @@ export default function AdminProductsPage() {
           <h1 className="text-2xl font-extrabold text-[#1e3a5f]">Products</h1>
           <p className="text-sm text-gray-400 mt-0.5">{products.length} products in database</p>
         </div>
-        <button
-          onClick={openNew}
-          className="flex items-center gap-2 px-4 py-2 bg-[#1e3a5f] text-white text-sm font-bold rounded-lg hover:bg-[#152d4a] transition-colors"
-        >
-          <Plus size={16} /> Add Product
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/admin/product-template"
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <Download size={15} /> Template
+          </a>
+          <button
+            onClick={() => importRef.current?.click()}
+            disabled={importing}
+            className="flex items-center gap-2 px-4 py-2 border border-[#1e3a5f] text-[#1e3a5f] text-sm font-semibold rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50"
+          >
+            <FileSpreadsheet size={15} /> {importing ? 'Importing...' : 'Import Excel'}
+          </button>
+          <input ref={importRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={handleImport} />
+          <button
+            onClick={openNew}
+            className="flex items-center gap-2 px-4 py-2 bg-[#1e3a5f] text-white text-sm font-bold rounded-lg hover:bg-[#152d4a] transition-colors"
+          >
+            <Plus size={16} /> Add Product
+          </button>
+        </div>
       </div>
 
       {loading ? (
