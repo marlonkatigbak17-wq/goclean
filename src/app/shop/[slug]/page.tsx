@@ -27,7 +27,7 @@ export default async function ProductDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
           {/* Image */}
-          <ProductImage slug={product.slug} name={product.name} className="rounded-2xl h-96" />
+          <ProductImage slug={product.slug} name={product.name} src={product.images?.[0]} className="rounded-2xl h-96" />
 
           {/* Info */}
           <div>

@@ -150,7 +150,7 @@ export default function HomePage() {
             {featuredProducts.map((p, i) => (
               <div key={p.id} className="bg-white border rounded-2xl overflow-hidden hover:shadow-lg transition-all">
                 <div className="relative">
-                  <ProductImage slug={p.slug} name={p.name} className="h-48" />
+                  <ProductImage slug={p.slug} name={p.name} src={p.images?.[0]} className="h-48" />
                   {i === 0 && (
                     <span className="absolute top-3 left-3 bg-[#f0a500] text-[#1e3a5f] text-xs font-bold px-2 py-0.5 rounded-full">
                       Best Seller

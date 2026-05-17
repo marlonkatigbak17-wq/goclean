@@ -202,7 +202,7 @@ export default function ShopPage() {
             {filtered.map((p) => (
               <div key={p.id} className={`border rounded-2xl overflow-hidden hover:shadow-lg transition-all group ${!p.inStock ? 'opacity-75' : ''}`}>
                 <div className="relative">
-                  <ProductImage slug={p.slug} name={p.name} className="h-48" />
+                  <ProductImage slug={p.slug} name={p.name} src={p.images?.[0]} className="h-48" />
                   {!p.inStock ? (
                     <span className="absolute top-3 left-3 text-xs font-bold px-2 py-0.5 rounded-full bg-gray-700 text-white">
                       Out of Stock
