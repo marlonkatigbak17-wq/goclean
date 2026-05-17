@@ -4,6 +4,7 @@ import { formatPrice } from '@/lib/utils';
 import { CheckCircle, Zap, Star, Package } from 'lucide-react';
 import AddToCartButton from '@/components/shop/AddToCartButton';
 import ProductImage from '@/components/shop/ProductImage';
+import ProductReviews from '@/components/shop/ProductReviews';
 
 export async function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
@@ -101,6 +102,8 @@ export default async function ProductDetailPage({
           </div>
         </div>
       </div>
+
+      <ProductReviews slug={product.slug} />
     </div>
   );
 }

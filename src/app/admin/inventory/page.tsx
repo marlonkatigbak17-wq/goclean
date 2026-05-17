@@ -1,4 +1,7 @@
-import { AlertTriangle, Plus } from 'lucide-react';
+'use client';
+
+import { useState } from 'react';
+import { AlertTriangle, Plus, Bell } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 
 const inventory = [
@@ -16,6 +19,16 @@ const inventory = [
 const lowStockCount = inventory.filter((i) => i.status === 'low').length;
 
 export default function AdminInventoryPage() {
+  const [alertSent, setAlertSent] = useState(false);
+  const [alertLoading, setAlertLoading] = useState(false);
+
+  async function sendAlert() {
+    setAlertLoading(true);
+    await fetch('/api/admin/inventory-alert', { method: 'POST' });
+    setAlertSent(true);
+    setAlertLoading(false);
+  }
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
@@ -23,9 +36,21 @@ export default function AdminInventoryPage() {
           <h1 className="text-2xl font-extrabold text-[#1e3a5f]">Inventory</h1>
           <p className="text-gray-500 text-sm">{inventory.length} items · {lowStockCount} low stock</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#f0a500] text-[#1e3a5f] font-bold rounded-lg hover:bg-yellow-400 transition-colors">
-          <Plus size={16} /> Add Item
-        </button>
+        <div className="flex gap-2">
+          {lowStockCount > 0 && (
+            <button
+              onClick={sendAlert}
+              disabled={alertLoading || alertSent}
+              className="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 text-red-600 text-sm font-bold rounded-lg hover:bg-red-100 transition-colors disabled:opacity-60"
+            >
+              <Bell size={15} />
+              {alertSent ? 'Alert Sent!' : alertLoading ? 'Sending...' : 'Email Low Stock Alert'}
+            </button>
+          )}
+          <button className="flex items-center gap-2 px-4 py-2 bg-[#f0a500] text-[#1e3a5f] font-bold rounded-lg hover:bg-yellow-400 transition-colors">
+            <Plus size={16} /> Add Item
+          </button>
+        </div>
       </div>
 
       {lowStockCount > 0 && (
@@ -71,9 +96,7 @@ export default function AdminInventoryPage() {
                   )}
                 </td>
                 <td className="px-5 py-3">
-                  <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded font-medium hover:bg-blue-200 transition-colors">
-                    Restock
-                  </button>
+                  <button className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded font-medium hover:bg-blue-200 transition-colors">Restock</button>
                 </td>
               </tr>
             ))}

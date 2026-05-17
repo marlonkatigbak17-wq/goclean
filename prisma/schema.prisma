@@ -23,3 +23,82 @@ model Product {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 }
+
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  password  String
+  phone     String    @default("")
+  createdAt DateTime  @default(now())
+  orders    Order[]
+  bookings  Booking[]
+  reviews   ProductReview[]
+  address   Address?
+}
+
+model Booking {
+  id            String   @id @default(cuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name          String
+  email         String
+  phone         String
+  address       String
+  service       String
+  preferredDate String
+  notes         String   @default("")
+  adminNotes          String   @default("")
+  status              String   @default("pending")
+  rebookReminderSent  Boolean  @default(false)
+  createdAt           DateTime @default(now())
+}
+
+model Address {
+  id       String @id @default(cuid())
+  userId   String @unique
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  street   String @default("")
+  city     String @default("")
+  province String @default("")
+}
+
+model Coupon {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  discountType  String   @default("percentage")
+  discountValue Float
+  minOrder      Float    @default(0)
+  maxUses       Int?
+  usedCount     Int      @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+model ProductReview {
+  id           String   @id @default(cuid())
+  productSlug  String
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName String
+  rating       Int
+  comment      String
+  createdAt    DateTime @default(now())
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId     String   @unique
+  customerName  String
+  customerEmail String
+  customerPhone String   @default("")
+  address       String   @default("")
+  notes         String   @default("")
+  adminNotes    String   @default("")
+  items         Json
+  total         Float
+  status        String   @default("paid")
+  createdAt     DateTime @default(now())
+}

@@ -43,10 +43,10 @@ export default function FloatingChat() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-3">
       {/* Chat panel */}
       <div
-        className={`transition-all duration-300 origin-bottom-right ${
+        className={`transition-all duration-300 origin-bottom-left ${
           open ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'
         }`}
       >
@@ -77,14 +77,29 @@ export default function FloatingChat() {
         </div>
       </div>
 
-      {/* Toggle button */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-14 h-14 rounded-full bg-[#1e3a5f] text-white shadow-lg hover:bg-[#152d4a] transition-all flex items-center justify-center"
-        aria-label="Chat with us"
-      >
-        {open ? <X size={22} /> : <MessageCircle size={22} />}
-      </button>
+      <div className="flex gap-3">
+        {/* WhatsApp standalone button */}
+        <a
+          href="https://wa.me/639178237205"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-14 h-14 rounded-full bg-[#25d366] text-white shadow-lg hover:bg-[#1db954] transition-all flex items-center justify-center"
+          aria-label="Chat on WhatsApp"
+        >
+          <svg viewBox="0 0 24 24" className="w-7 h-7 fill-white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-1.6-.8-2.7-1.4-3.7-3.1-.3-.5.3-.4.8-1.5.1-.2 0-.4-.1-.5-.1-.1-.7-1.7-1-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.1 2 3.1 4.9 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.6.2-1.2.1-1.3l-.3-.2zM12 0C5.4 0 0 5.4 0 12c0 2.1.6 4.2 1.6 6L0 24l6.3-1.6c1.7.9 3.7 1.4 5.7 1.4 6.6 0 12-5.4 12-12S18.6 0 12 0zm0 21.8c-1.8 0-3.6-.5-5.1-1.4l-.4-.2-3.7.9.9-3.6-.2-.4C2.4 15.5 2 13.8 2 12 2 6.5 6.5 2 12 2s10 4.5 10 10-4.5 9.8-10 9.8z"/>
+          </svg>
+        </a>
+
+        {/* Toggle button */}
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="w-14 h-14 rounded-full bg-[#1e3a5f] text-white shadow-lg hover:bg-[#152d4a] transition-all flex items-center justify-center"
+          aria-label="Chat with us"
+        >
+          {open ? <X size={22} /> : <MessageCircle size={22} />}
+        </button>
+      </div>
     </div>
   );
 }

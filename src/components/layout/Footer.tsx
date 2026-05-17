@@ -3,16 +3,23 @@ import { Phone, Mail, MapPin, Share2, MessageCircle } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-[#1a1a2e] text-gray-300">
+    <footer className="bg-[#0a1440] text-gray-300">
       <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 
         {/* Brand */}
         <div>
-          <div className="text-2xl font-bold mb-1">
-            <span className="text-white">GoClean</span>
-            <span className="text-[#f0a500]"> Aircon</span>
+          <div className="mb-3">
+            <svg viewBox="0 0 210 58" className="h-12 w-auto" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="22" cy="29" r="22" fill="#0d1d6e" />
+              <circle cx="40" cy="29" r="22" fill="#1565c0" />
+              <path d="M5 22 Q15 14 26 22 Q37 30 50 22" stroke="white" strokeWidth="3.2" fill="none" strokeLinecap="round" />
+              <path d="M3 30 Q13 22 24 30 Q35 38 48 30" stroke="white" strokeWidth="3.2" fill="none" strokeLinecap="round" />
+              <path d="M5 38 Q15 30 26 38 Q37 46 50 38" stroke="white" strokeWidth="3.2" fill="none" strokeLinecap="round" />
+              <text x="72" y="24" fontFamily="Arial Black, Arial, sans-serif" fontWeight="900" fontSize="18" fill="white" letterSpacing="0.5">GOCLEAN</text>
+              <text x="72" y="43" fontFamily="Arial Black, Arial, sans-serif" fontWeight="900" fontSize="18" fill="white" letterSpacing="0.5">AIRCON</text>
+              <text x="73" y="55" fontFamily="Arial, sans-serif" fontWeight="700" fontSize="7.5" fill="#93c5fd" letterSpacing="1.5">SUPPLIES AND SERVICES</text>
+            </svg>
           </div>
-          <div className="text-xs text-blue-300 mb-3">Supplies &amp; Services</div>
           <p className="text-sm text-gray-400 mb-2">
             Authorized Daikin Dealer &amp; Installer. TESDA NC III certified technicians. Serving residential, commercial, and industrial clients since 2016.
           </p>
@@ -60,6 +67,10 @@ export default function Footer() {
                 <Link href="/shop" className="hover:text-white transition-colors">{s}</Link>
               </li>
             ))}
+            <li><Link href="/bundles" className="hover:text-white transition-colors text-[#f0a500]">Bundle Deals</Link></li>
+            <li><Link href="/blog" className="hover:text-white transition-colors">Aircon Tips Blog</Link></li>
+            <li><Link href="/track" className="hover:text-white transition-colors">Track My Order</Link></li>
+            <li><Link href="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
           </ul>
         </div>
 

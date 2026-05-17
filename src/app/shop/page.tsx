@@ -200,10 +200,14 @@ export default function ShopPage() {
         ) : filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((p) => (
-              <div key={p.id} className="border rounded-2xl overflow-hidden hover:shadow-lg transition-all group">
+              <div key={p.id} className={`border rounded-2xl overflow-hidden hover:shadow-lg transition-all group ${!p.inStock ? 'opacity-75' : ''}`}>
                 <div className="relative">
                   <ProductImage slug={p.slug} name={p.name} className="h-48" />
-                  {p.badge && (
+                  {!p.inStock ? (
+                    <span className="absolute top-3 left-3 text-xs font-bold px-2 py-0.5 rounded-full bg-gray-700 text-white">
+                      Out of Stock
+                    </span>
+                  ) : p.badge && (
                     <span className={`absolute top-3 left-3 text-xs font-bold px-2 py-0.5 rounded-full ${
                       p.badge === 'Best Seller' ? 'bg-[#f0a500] text-[#1e3a5f]' :
                       p.badge === 'New' ? 'bg-green-500 text-white' :
@@ -223,7 +227,9 @@ export default function ShopPage() {
                   <h3 className="font-bold text-[#1e3a5f] mb-1 text-sm leading-tight">{p.name}</h3>
                   <div className="flex items-center gap-1 mb-3">
                     <Star size={12} className="text-[#f0a500] fill-[#f0a500]" />
-                    <span className="text-xs text-gray-500">4.8 · In Stock</span>
+                    <span className={`text-xs ${p.inStock ? 'text-gray-500' : 'text-red-500 font-medium'}`}>
+                      {p.inStock ? '4.8 · In Stock' : 'Out of Stock'}
+                    </span>
                   </div>
 
                   <div className="mb-4">
@@ -244,11 +250,13 @@ export default function ShopPage() {
                     </Link>
                     <button
                       onClick={() => {
+                        if (!p.inStock) return;
                         addItem(p, false);
                         showToast(`${p.name} added to cart`);
                       }}
-                      className="p-2 bg-[#f0a500] text-[#1e3a5f] rounded hover:bg-yellow-400 transition-colors"
-                      title="Add to cart"
+                      disabled={!p.inStock}
+                      className={`p-2 rounded transition-colors ${p.inStock ? 'bg-[#f0a500] text-[#1e3a5f] hover:bg-yellow-400 cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                      title={p.inStock ? 'Add to cart' : 'Out of stock'}
                     >
                       <ShoppingCart size={16} />
                     </button>
