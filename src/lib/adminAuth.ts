@@ -1,10 +1,11 @@
 import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-const secret = () =>
-  new TextEncoder().encode(
-    process.env.JWT_SECRET ?? 'goclean-jwt-secret-2024-change-in-production'
-  );
+const secret = () => {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) throw new Error('JWT_SECRET environment variable is not set');
+  return new TextEncoder().encode(jwtSecret);
+};
 
 export async function requireAdmin(): Promise<boolean> {
   const cookieStore = await cookies();

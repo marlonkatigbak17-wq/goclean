@@ -112,16 +112,15 @@ export async function POST(request: Request) {
     const rawBody = await request.text();
     const sigHeader = request.headers.get('paymongo-signature') ?? '';
 
-    // Verify signature if webhook secret is set
     const webhookSecret = process.env.PAYMONGO_WEBHOOK_SECRET;
-    if (webhookSecret && sigHeader) {
-      const parts = Object.fromEntries(sigHeader.split(',').map((p) => p.split('=')));
-      const expected = createHmac('sha256', webhookSecret)
-        .update(`${parts['t']}.${rawBody}`)
-        .digest('hex');
-      if (expected !== parts['v1']) {
-        return Response.json({ error: 'Invalid signature' }, { status: 401 });
-      }
+    if (!webhookSecret) return Response.json({ error: 'Webhook not configured' }, { status: 500 });
+    if (!sigHeader) return Response.json({ error: 'Missing signature' }, { status: 401 });
+    const parts = Object.fromEntries(sigHeader.split(',').map((p) => p.split('=')));
+    const expected = createHmac('sha256', webhookSecret)
+      .update(`${parts['t']}.${rawBody}`)
+      .digest('hex');
+    if (expected !== parts['v1']) {
+      return Response.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     const event = JSON.parse(rawBody);

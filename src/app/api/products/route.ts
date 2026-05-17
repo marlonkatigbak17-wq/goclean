@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!await requireAdmin()) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const body = await request.json();
     const slug = body.slug ||

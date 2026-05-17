@@ -1,8 +1,10 @@
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!await requireAdmin()) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const { id } = await params;
     const body = await request.json();
@@ -35,6 +37,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!await requireAdmin()) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const { id } = await params;
     await prisma.product.delete({ where: { id } });

@@ -1,9 +1,9 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? 'goclean-jwt-secret-2024-change-in-production'
-);
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) throw new Error('JWT_SECRET environment variable is not set');
+const secret = new TextEncoder().encode(jwtSecret);
 
 export async function signToken(payload: { userId: string; email: string; name: string }) {
   return new SignJWT(payload)
