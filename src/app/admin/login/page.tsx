@@ -1,38 +1,43 @@
-'use client';
-
-import { useState } from 'react';
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { SignJWT } from 'jose';
 import { Lock } from 'lucide-react';
 
-export default function AdminLoginPage() {
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+async function doLogin(formData: FormData) {
+  'use server';
+  const password = formData.get('password')?.toString() ?? '';
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        window.location.href = '/admin';
-      } else {
-        setError(`Error ${res.status}: ${data.error || 'Unknown error'}`);
-        setLoading(false);
-      }
-    } catch (err) {
-      setError(`Network error: ${err}`);
-      setLoading(false);
-    }
+  if (!password || password !== process.env.ADMIN_PASSWORD) {
+    redirect('/admin/login?error=1');
   }
+
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) redirect('/admin/login?error=config');
+
+  const token = await new SignJWT({ admin: true })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('24h')
+    .sign(new TextEncoder().encode(jwtSecret!));
+
+  const cookieStore = await cookies();
+  cookieStore.set('admin_auth', token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 86400,
+    secure: process.env.NODE_ENV === 'production',
+  });
+
+  redirect('/admin');
+}
+
+export default async function AdminLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const params = await searchParams;
 
   return (
     <div className="min-h-screen bg-[#0f1f5c] flex items-center justify-center px-4">
@@ -45,30 +50,32 @@ export default function AdminLoginPage() {
           <p className="text-gray-400 text-sm mt-1">GoClean Aircon</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form action={doLogin} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
+              name="password"
               required
               autoFocus
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               className="w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
               placeholder="Enter admin password"
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 font-mono break-all">{error}</p>
+          {params.error && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              {params.error === 'config'
+                ? 'Server configuration error. Contact developer.'
+                : 'Wrong password. Try again.'}
+            </p>
           )}
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-[#0f1f5c] text-white font-bold rounded-lg hover:bg-[#0a1440] transition-colors disabled:opacity-60"
+            className="w-full py-3 bg-[#0f1f5c] text-white font-bold rounded-lg hover:bg-[#0a1440] transition-colors"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            Login
           </button>
         </form>
       </div>
