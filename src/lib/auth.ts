@@ -1,21 +1,23 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-const jwtSecret = process.env.JWT_SECRET;
-if (!jwtSecret) throw new Error('JWT_SECRET environment variable is not set');
-const secret = new TextEncoder().encode(jwtSecret);
+function getSecret() {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) throw new Error('JWT_SECRET environment variable is not set');
+  return new TextEncoder().encode(jwtSecret);
+}
 
 export async function signToken(payload: { userId: string; email: string; name: string }) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('30d')
-    .sign(secret);
+    .sign(getSecret());
 }
 
 export async function verifyToken(token: string) {
   try {
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, getSecret());
     return payload as { userId: string; email: string; name: string };
   } catch {
     return null;
