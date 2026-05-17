@@ -29,12 +29,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Allow admin login/logout through
-  if (pathname === '/admin/login' || pathname === '/api/admin/logout') {
-    return NextResponse.next();
-  }
-
-  // AUTH TEMPORARILY DISABLED — re-enable when done editing
+  // AUTH DISABLED
   return NextResponse.next();
 }
 
