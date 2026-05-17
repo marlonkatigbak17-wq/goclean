@@ -118,6 +118,9 @@ export default function AdminProductsPage() {
     const res = await fetch('/api/upload', { method: 'POST', body: fd });
     if (!res.ok) return null;
     const data = await res.json();
+    if (data.pending) {
+      showToast('Photo saved — will appear on site in ~2 minutes after deploy');
+    }
     return data.url;
   }
 
