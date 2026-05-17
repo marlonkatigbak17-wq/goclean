@@ -1,6 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
@@ -17,20 +14,19 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Invalid file type' }, { status: 400 });
   }
 
-  const filename = `${slug}.${ext}`;
-
-  // Use Vercel Blob in production
+  // Use Vercel Blob if configured
   if (process.env.BLOB_READ_WRITE_TOKEN) {
-    // @ts-ignore — installed after npm install
     const { put } = await import('@vercel/blob');
+    const filename = `${slug}.${ext}`;
     const blob = await put(`products/${filename}`, file, { access: 'public' });
     return Response.json({ url: blob.url });
   }
 
-  // Local development fallback — save to public/images/products/
+  // Fallback: store as base64 data URL (works everywhere, no storage setup needed)
   const buffer = Buffer.from(await file.arrayBuffer());
-  const dir = path.join(process.cwd(), 'public', 'images', 'products');
-  fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, filename), buffer);
-  return Response.json({ url: `/images/products/${filename}` });
+  const mimeType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+  const base64 = buffer.toString('base64');
+  const dataUrl = `data:${mimeType};base64,${base64}`;
+
+  return Response.json({ url: dataUrl });
 }

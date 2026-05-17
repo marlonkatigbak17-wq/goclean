@@ -93,7 +93,7 @@ export default function AdminProductsPage() {
   function openEdit(p: Product) {
     setEditProduct({ ...p, specs: { ...p.specs } });
     setIsNew(false);
-    setImagePreview(`/images/products/${p.slug}.jpg`);
+    setImagePreview(p.images?.[0] || '');
     setImageFile(null);
   }
 
@@ -266,13 +266,16 @@ export default function AdminProductsPage() {
                   <td className="px-4 py-3">
                     <div className="w-12 h-12 relative rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                       <span className="text-xl absolute">❄️</span>
-                      <Image
-                        src={`/images/products/${p.slug}.jpg`}
-                        alt={p.name}
-                        fill
-                        className="object-contain relative"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                      />
+                      {p.images?.[0] && (
+                        <Image
+                          src={p.images[0]}
+                          alt={p.name}
+                          fill
+                          className="object-contain relative"
+                          unoptimized
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3">
