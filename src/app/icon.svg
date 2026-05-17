@@ -1,8 +1,23 @@
-<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-  <rect width="64" height="64" rx="14" fill="#0f1f5c"/>
-  <circle cx="22" cy="32" r="17" fill="#0d1d6e"/>
-  <circle cx="42" cy="32" r="17" fill="#1565c0"/>
-  <path d="M6 25 Q16 17 27 25 Q38 33 52 25" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round"/>
-  <path d="M5 32 Q15 24 26 32 Q37 40 51 32" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round"/>
-  <path d="M6 39 Q16 31 27 39 Q38 47 52 39" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- White rounded background -->
+  <rect width="200" height="200" rx="40" fill="white"/>
+
+  <!-- Indigo circle (behind, upper-right) -->
+  <circle cx="128" cy="82" r="62" fill="#3535d4"/>
+
+  <!-- Blue circle (front, lower-left) + clip for wave shapes -->
+  <defs>
+    <clipPath id="bc">
+      <circle cx="82" cy="118" r="68"/>
+    </clipPath>
+  </defs>
+  <circle cx="82" cy="118" r="68" fill="#1a5ff0"/>
+
+  <!-- White wave swooshes clipped inside blue circle -->
+  <g clip-path="url(#bc)" fill="white">
+    <path d="M 10 172 Q 55 130 100 100 Q 135 75 175 60 L 173 74 Q 133 89 98 114 Q 53 144 8 186 Z"/>
+    <path d="M 8 148 Q 53 106 98 76 Q 133 51 173 36 L 171 50 Q 131 65 96 90 Q 51 120 6 162 Z"/>
+    <path d="M 12 122 Q 57 80 102 50 Q 137 25 172 12 L 170 26 Q 135 39 100 64 Q 55 94 10 136 Z"/>
+    <path d="M 22 95 Q 67 53 112 23 Q 144 1 172 -10 L 170 4 Q 142 15 110 37 Q 65 67 20 109 Z"/>
+  </g>
 </svg>
