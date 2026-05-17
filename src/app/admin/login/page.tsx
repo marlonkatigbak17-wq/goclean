@@ -13,16 +13,23 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError('');
 
-    const res = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-    });
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
 
-    if (res.ok) {
-      window.location.href = '/admin';
-    } else {
-      setError('Wrong password. Try again.');
+      const data = await res.json();
+
+      if (res.ok) {
+        window.location.href = '/admin';
+      } else {
+        setError(`Error ${res.status}: ${data.error || 'Unknown error'}`);
+        setLoading(false);
+      }
+    } catch (err) {
+      setError(`Network error: ${err}`);
       setLoading(false);
     }
   }
@@ -53,7 +60,7 @@ export default function AdminLoginPage() {
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 font-mono break-all">{error}</p>
           )}
 
           <button
