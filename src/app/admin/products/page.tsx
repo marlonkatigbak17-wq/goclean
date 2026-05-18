@@ -43,7 +43,7 @@ const emptyProduct = (): Omit<Product, 'id'> => ({
 });
 
 const brands = ['Daikin', 'Carrier', 'Midea', 'Panasonic', 'LG', 'AUX', 'Generic', 'Other'];
-const categories = ['residential', 'commercial', 'hvac-supplies', 'tools'];
+const categories = ['residential', 'commercial', 'hvac-supplies', 'tools', 'services'];
 const subcategories = ['Split Type', 'Window Type', 'Cassette', 'Copper Tube', 'Vacuum Pump', 'Other'];
 const badges = ['', 'Best Seller', 'New', 'Sale'];
 
