@@ -1,13 +1,14 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, ShieldCheck } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const [email, setEmail]     = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError]       = useState('');
-  const [loading, setLoading]   = useState(false);
+  const [error, setError]     = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -16,13 +17,13 @@ export default function AdminLoginPage() {
     const res = await fetch('/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ email, password }),
     });
     if (res.ok) {
       router.push('/admin');
     } else {
       const data = await res.json().catch(() => ({}));
-      setError(data.error || 'Wrong password');
+      setError(data.error || 'Invalid credentials');
     }
     setLoading(false);
   }
@@ -39,18 +40,21 @@ export default function AdminLoginPage() {
         </div>
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
+            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Email</label>
+            <div className="relative">
+              <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoFocus
+                className="w-full border rounded-xl pl-9 pr-4 py-3 text-sm focus:outline-none focus:border-[#0f1f5c]"
+                placeholder="admin@gocleanair.co" />
+            </div>
+          </div>
+          <div>
             <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Password</label>
             <div className="relative">
               <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                autoFocus
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
                 className="w-full border rounded-xl pl-9 pr-4 py-3 text-sm focus:outline-none focus:border-[#0f1f5c]"
-                placeholder="Enter admin password"
-              />
+                placeholder="••••••••" />
             </div>
           </div>
           {error && <p className="text-sm text-red-500 text-center">{error}</p>}
