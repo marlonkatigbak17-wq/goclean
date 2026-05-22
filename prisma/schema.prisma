@@ -71,6 +71,9 @@ model Technician {
   phone     String    @default("")
   password  String
   active    Boolean   @default(true)
+  lastLat   Float?
+  lastLng   Float?
+  lastSeen  DateTime?
   createdAt DateTime  @default(now())
   bookings  Booking[]
 }

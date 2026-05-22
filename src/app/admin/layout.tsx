@@ -6,7 +6,7 @@ import { useState } from 'react';
 import {
   LayoutDashboard, Package, ShoppingBag, CalendarCheck,
   Boxes, LogOut, Users, Tag, Calendar, UserSquare2, Wrench,
-  FileText, Menu, X, ChevronDown, ContactRound, MessageSquare,
+  FileText, Menu, X, ChevronDown, ContactRound, MessageSquare, MapPin,
 } from 'lucide-react';
 
 const topNav = [
@@ -22,6 +22,7 @@ const crmNav = [
   { label: 'Customers',   href: '/admin/customers',   icon: Users },
   { label: 'Leads',       href: '/admin/leads',        icon: UserSquare2 },
   { label: 'Technicians', href: '/admin/technicians',  icon: Wrench },
+  { label: 'Tracking',    href: '/admin/tracking',     icon: MapPin },
   { label: 'Quotations',  href: '/admin/quotations',   icon: FileText },
 ];
 

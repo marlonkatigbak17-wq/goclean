@@ -1,8 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Wrench, CalendarDays, CheckCircle2, Clock, LogOut } from 'lucide-react';
+import { Wrench, CalendarDays, CheckCircle2, Clock, LogOut, MapPin, MapPinOff } from 'lucide-react';
 
 type Job = {
   id: string; name: string; phone: string; service: string;
@@ -22,6 +22,10 @@ export default function TechnicianDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('active');
+  const [tracking, setTracking] = useState(false);
+  const [gpsError, setGpsError] = useState('');
+  const watchIdRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     fetch('/api/technician/jobs')
@@ -33,7 +37,67 @@ export default function TechnicianDashboard() {
       .finally(() => setLoading(false));
   }, [router]);
 
+  useEffect(() => {
+    return () => {
+      // Cleanup on unmount
+      if (watchIdRef.current !== null) navigator.geolocation.clearWatch(watchIdRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  function sendLocation(lat: number, lng: number) {
+    fetch('/api/technician/location', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat, lng }),
+    }).catch(() => {});
+  }
+
+  function startTracking() {
+    if (!navigator.geolocation) {
+      setGpsError('GPS not supported on this device');
+      return;
+    }
+    setGpsError('');
+
+    // Get initial position immediately
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        sendLocation(pos.coords.latitude, pos.coords.longitude);
+        setTracking(true);
+      },
+      err => {
+        if (err.code === err.PERMISSION_DENIED) setGpsError('Location permission denied. Please allow location access.');
+        else setGpsError('Could not get location. Try again.');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+
+    // Then update every 30 seconds
+    intervalRef.current = setInterval(() => {
+      navigator.geolocation.getCurrentPosition(
+        pos => sendLocation(pos.coords.latitude, pos.coords.longitude),
+        () => {},
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }, 30000);
+  }
+
+  function stopTracking() {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    fetch('/api/technician/location', { method: 'DELETE' }).catch(() => {});
+    setTracking(false);
+  }
+
   async function handleLogout() {
+    stopTracking();
     await fetch('/api/technician/logout', { method: 'POST' });
     router.push('/technician/login');
   }
@@ -59,6 +123,32 @@ export default function TechnicianDashboard() {
       </div>
 
       <div className="max-w-lg mx-auto p-4">
+        {/* GPS Location Toggle */}
+        <div className={`mb-4 rounded-2xl p-4 border-2 transition-colors ${tracking ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200'}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tracking ? 'bg-green-500' : 'bg-gray-200'}`}>
+                {tracking ? <MapPin size={18} className="text-white" /> : <MapPinOff size={18} className="text-gray-500" />}
+              </div>
+              <div>
+                <div className={`font-bold text-sm ${tracking ? 'text-green-700' : 'text-gray-700'}`}>
+                  {tracking ? 'Sharing Location' : 'Location Off'}
+                </div>
+                <div className="text-xs text-gray-400">
+                  {tracking ? 'Admin can see your location · updates every 30s' : 'Tap to share location with admin'}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={tracking ? stopTracking : startTracking}
+              className={`relative w-12 h-6 rounded-full transition-colors ${tracking ? 'bg-green-500' : 'bg-gray-300'}`}
+            >
+              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${tracking ? 'translate-x-6' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
+          {gpsError && <div className="mt-2 text-xs text-red-500 font-medium">{gpsError}</div>}
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-5">
           {[
