@@ -9,7 +9,7 @@ import {
   FileText, Menu, X, ChevronDown, ContactRound, MessageSquare, MapPin,
 } from 'lucide-react';
 
-const topNav = [
+const mainNav = [
   { label: 'Dashboard', href: '/admin',           icon: LayoutDashboard },
   { label: 'Products',  href: '/admin/products',   icon: Package },
   { label: 'Orders',    href: '/admin/orders',     icon: ShoppingBag },
@@ -26,7 +26,7 @@ const crmNav = [
   { label: 'Quotations',  href: '/admin/quotations',   icon: FileText },
 ];
 
-const bottomNav = [
+const extraNav = [
   { label: 'SMS Blast',   href: '/admin/sms-blast', icon: MessageSquare },
   { label: 'Promo Codes', href: '/admin/coupons',    icon: Tag },
 ];
@@ -34,134 +34,167 @@ const bottomNav = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
   const pathname = usePathname();
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [crmOpen, setCrmOpen]       = useState(false);
 
-  const crmActive = crmNav.some(
-    item => pathname === item.href || pathname.startsWith(item.href),
-  );
-  const [crmOpen, setCrmOpen] = useState(crmActive);
+  const crmActive = crmNav.some(item => pathname === item.href || pathname.startsWith(item.href + '/'));
 
   async function handleLogout() {
     await fetch('/api/admin/logout', { method: 'POST' });
     router.push('/admin/login');
   }
 
-  function NavLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
-    const active = pathname === href || (href !== '/admin' && pathname.startsWith(href));
-    return (
-      <Link
-        href={href}
-        onClick={() => setDrawerOpen(false)}
-        className={`flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${
-          active
-            ? 'bg-white/15 text-white font-semibold border-r-2 border-white'
-            : 'text-blue-100 hover:bg-white/10 hover:text-white'
-        }`}
-      >
-        <Icon size={15} />
-        {label}
-      </Link>
-    );
+  function isActive(href: string) {
+    return href === '/admin'
+      ? pathname === href
+      : pathname === href || pathname.startsWith(href + '/');
   }
 
-  const SidebarContent = () => (
-    <>
-      {/* Logo */}
-      <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between shrink-0">
-        <div>
-          <div className="text-lg font-extrabold text-white">GoClean</div>
-          <div className="text-xs text-blue-300 mt-0.5">Admin Dashboard</div>
-        </div>
-        <button onClick={() => setDrawerOpen(false)} className="lg:hidden p-1 text-blue-300 hover:text-white">
-          <X size={20} />
-        </button>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 py-1 overflow-y-auto">
-
-        {/* Top links */}
-        {topNav.map(item => <NavLink key={item.href} {...item} />)}
-
-        {/* CRM dropdown */}
-        <div className="mt-1">
-          <button
-            onClick={() => setCrmOpen(v => !v)}
-            className={`w-full flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${
-              crmActive
-                ? 'text-white font-semibold'
-                : 'text-blue-100 hover:bg-white/10 hover:text-white'
-            }`}
-          >
-            <ContactRound size={15} />
-            <span className="flex-1 text-left">CRM</span>
-            <ChevronDown
-              size={14}
-              className={`transition-transform duration-200 ${crmOpen ? 'rotate-180' : ''}`}
-            />
-          </button>
-
-          {crmOpen && (
-            <div className="bg-black/20">
-              {crmNav.map(item => (
-                <NavLink key={item.href} {...item} />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Bottom links */}
-        {bottomNav.map(item => <NavLink key={item.href} {...item} />)}
-
-      </nav>
-
-      {/* Footer */}
-      <div className="px-5 py-4 border-t border-white/10 space-y-2 shrink-0">
-        <Link href="/" className="block text-xs text-blue-300 hover:text-white transition-colors">
-          ← Back to Website
-        </Link>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 text-xs text-red-300 hover:text-red-100 transition-colors"
-        >
-          <LogOut size={13} /> Logout
-        </button>
-      </div>
-    </>
-  );
+  const linkCls = (active: boolean) =>
+    `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+      active ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white'
+    }`;
 
   return (
     <div className="min-h-screen bg-gray-100">
 
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex fixed top-0 left-0 h-full w-56 bg-[#0f1f5c] text-white flex-col z-30 overflow-y-auto">
-        <SidebarContent />
-      </aside>
+      {/* ── Top Navbar ── */}
+      <header className="fixed top-0 left-0 right-0 z-40 bg-[#0f1f5c] shadow-md">
+        <div className="flex items-center gap-2 px-4 h-14">
 
-      {/* Mobile backdrop */}
-      {drawerOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setDrawerOpen(false)} />
-      )}
+          {/* Logo */}
+          <div className="shrink-0 mr-3">
+            <div className="font-extrabold text-white text-base leading-tight">GoClean</div>
+            <div className="text-blue-300 text-[10px] leading-none">Admin</div>
+          </div>
 
-      {/* Mobile drawer */}
-      <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-[#0f1f5c] text-white flex flex-col z-50 lg:hidden transition-transform duration-300 overflow-y-auto ${
-          drawerOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <SidebarContent />
-      </aside>
+          {/* Desktop nav links */}
+          <nav className="hidden lg:flex items-center gap-0.5 flex-1 flex-wrap">
+            {mainNav.map(item => (
+              <Link key={item.href} href={item.href} className={linkCls(isActive(item.href))}>
+                <item.icon size={14} />{item.label}
+              </Link>
+            ))}
 
-      {/* Mobile top bar */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#0f1f5c] text-white flex items-center gap-3 px-4 py-3 shadow">
-        <button onClick={() => setDrawerOpen(true)} className="p-1 text-white">
-          <Menu size={22} />
-        </button>
-        <span className="font-extrabold text-base">GoClean Admin</span>
+            {/* CRM dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setCrmOpen(v => !v)}
+                onBlur={() => setTimeout(() => setCrmOpen(false), 150)}
+                className={linkCls(crmActive)}
+              >
+                <ContactRound size={14} />
+                CRM
+                <ChevronDown size={12} className={`transition-transform duration-200 ${crmOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {crmOpen && (
+                <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border py-1 min-w-[175px] z-50">
+                  {crmNav.map(item => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setCrmOpen(false)}
+                      className={`flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors ${
+                        isActive(item.href)
+                          ? 'bg-blue-50 text-[#0f1f5c] font-semibold'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <item.icon size={14} />{item.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {extraNav.map(item => (
+              <Link key={item.href} href={item.href} className={linkCls(isActive(item.href))}>
+                <item.icon size={14} />{item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex-1 lg:hidden" />
+
+          {/* Desktop logout */}
+          <button
+            onClick={handleLogout}
+            className="hidden lg:flex items-center gap-1.5 text-xs text-red-300 hover:text-red-100 px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors shrink-0"
+          >
+            <LogOut size={14} /> Logout
+          </button>
+
+          {/* Mobile hamburger */}
+          <button onClick={() => setMobileOpen(v => !v)} className="lg:hidden p-2 text-white">
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
+
+        {/* Mobile dropdown menu */}
+        {mobileOpen && (
+          <div className="lg:hidden bg-[#0f1f5c] border-t border-white/10 px-4 py-3 space-y-0.5 max-h-[80vh] overflow-y-auto">
+            {mainNav.map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium ${
+                  isActive(item.href) ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <item.icon size={15} />{item.label}
+              </Link>
+            ))}
+
+            <div className="text-xs text-blue-400 px-3 pt-3 pb-1 font-semibold uppercase tracking-widest">CRM</div>
+            {crmNav.map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium ${
+                  isActive(item.href) ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <item.icon size={15} />{item.label}
+              </Link>
+            ))}
+
+            <div className="text-xs text-blue-400 px-3 pt-3 pb-1 font-semibold uppercase tracking-widest">Tools</div>
+            {extraNav.map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium ${
+                  isActive(item.href) ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <item.icon size={15} />{item.label}
+              </Link>
+            ))}
+
+            <div className="pt-3 border-t border-white/10 space-y-0.5">
+              <Link
+                href="/"
+                onClick={() => setMobileOpen(false)}
+                className="block px-3 py-2.5 text-sm text-blue-300 hover:text-white rounded-xl hover:bg-white/10"
+              >
+                ← Back to Website
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-3 py-2.5 text-sm text-red-300 hover:text-red-100 w-full rounded-xl hover:bg-white/10"
+              >
+                <LogOut size={15} /> Logout
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* Main */}
-      <main className="lg:ml-56 pt-14 lg:pt-0 min-h-screen">{children}</main>
+      {/* Main content */}
+      <main className="pt-14 min-h-screen">{children}</main>
     </div>
   );
 }
