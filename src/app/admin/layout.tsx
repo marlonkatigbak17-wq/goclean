@@ -6,7 +6,7 @@ import { useState } from 'react';
 import {
   LayoutDashboard, Package, ShoppingBag, CalendarCheck,
   Boxes, LogOut, Users, Tag, Calendar, UserSquare2, Wrench,
-  FileText, Menu, X, ChevronDown, ContactRound,
+  FileText, Menu, X, ChevronDown, ContactRound, MessageSquare,
 } from 'lucide-react';
 
 const topNav = [
@@ -26,7 +26,8 @@ const crmNav = [
 ];
 
 const bottomNav = [
-  { label: 'Promo Codes', href: '/admin/coupons', icon: Tag },
+  { label: 'SMS Blast',   href: '/admin/sms-blast', icon: MessageSquare },
+  { label: 'Promo Codes', href: '/admin/coupons',    icon: Tag },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
