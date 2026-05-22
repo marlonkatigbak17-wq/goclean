@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Rate limit login endpoints
-  if (pathname === '/api/admin/login' || pathname === '/api/auth/login') {
+  if (pathname === '/api/admin/login' || pathname === '/api/auth/login' || pathname === '/api/technician/login') {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown';
     if (isRateLimited(ip)) {
       return NextResponse.json({ error: 'Too many attempts. Please try again in 15 minutes.' }, { status: 429 });
@@ -34,5 +34,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*', '/api/auth/login'],
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/api/auth/login', '/api/technician/login'],
 };

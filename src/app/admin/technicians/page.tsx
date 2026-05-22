@@ -18,6 +18,7 @@ export default function TechniciansPage() {
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [toast, setToast] = useState('');
+  const [toastError, setToastError] = useState(false);
 
   useEffect(() => { fetchTechs(); }, []);
 
@@ -29,7 +30,7 @@ export default function TechniciansPage() {
     setLoading(false);
   }
 
-  function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(''), 3000); }
+  function showToast(msg: string, isError = false) { setToast(msg); setToastError(isError); setTimeout(() => setToast(''), 4000); }
 
   async function handleSave() {
     if (!panel) return;
@@ -37,7 +38,12 @@ export default function TechniciansPage() {
     const url = isNew ? '/api/admin/technicians' : `/api/admin/technicians/${panel.id}`;
     const method = isNew ? 'POST' : 'PUT';
     const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(panel) });
-    if (res.ok) { await fetchTechs(); setPanel(null); showToast(isNew ? 'Technician added!' : 'Technician updated!'); }
+    if (res.ok) {
+      await fetchTechs(); setPanel(null); showToast(isNew ? 'Technician added!' : 'Technician updated!');
+    } else {
+      const data = await res.json().catch(() => ({}));
+      showToast(data.error || 'Failed to save. Please try again.', true);
+    }
     setSaving(false);
   }
 
@@ -142,7 +148,7 @@ export default function TechniciansPage() {
           </div>
         </div>
       )}
-      {toast && <div className="fixed bottom-6 right-6 z-[100] bg-[#1e3a5f] text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2"><Check size={14} className="text-green-400" /> {toast}</div>}
+      {toast && <div className={`fixed bottom-6 right-6 z-[100] px-5 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 ${toastError ? 'bg-red-600 text-white' : 'bg-[#1e3a5f] text-white'}`}><Check size={14} className={toastError ? 'text-red-200' : 'text-green-400'} /> {toast}</div>}
     </div>
   );
 }
