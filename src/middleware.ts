@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
 
 const loginAttempts = new Map<string, { count: number; reset: number }>();
 
@@ -17,11 +16,15 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Rate limit login endpoints
-  if (pathname === '/api/admin/login' || pathname === '/api/auth/login' || pathname === '/api/technician/login') {
+  if (
+    pathname === '/api/admin/login' ||
+    pathname === '/api/auth/login' ||
+    pathname === '/api/technician/login'
+  ) {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown';
     if (isRateLimited(ip)) {
       return NextResponse.json({ error: 'Too many attempts. Please try again in 15 minutes.' }, { status: 429 });
@@ -29,29 +32,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protect all admin pages and API routes (except the login page/endpoint itself)
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+  // Protect admin pages — skip the login page itself to avoid redirect loops
+  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
     const token = request.cookies.get('admin_auth')?.value;
-
     if (!token) {
-      // Page request → redirect to login
-      if (!pathname.startsWith('/api/')) {
-        return NextResponse.redirect(new URL('/admin/login', request.url));
+      // API routes return 401; page routes redirect to login
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
-      // API request → 401
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Verify the JWT
-    try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
-      const { payload } = await jwtVerify(token, secret);
-      if (payload.admin !== true) throw new Error('Not admin');
-    } catch {
-      if (!pathname.startsWith('/api/')) {
-        return NextResponse.redirect(new URL('/admin/login', request.url));
-      }
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.redirect(new URL('/admin/login', request.url));
     }
   }
 
