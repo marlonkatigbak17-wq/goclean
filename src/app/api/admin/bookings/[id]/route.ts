@@ -8,17 +8,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!await requireAdmin()) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const body = await request.json();
-  const { status, adminNotes } = body;
+  const { status, adminNotes, technicianId, partsUsed } = body;
 
   const booking = await prisma.booking.update({
     where: { id },
     data: {
       ...(status !== undefined && { status }),
       ...(adminNotes !== undefined && { adminNotes }),
+      ...(technicianId !== undefined && { technicianId: technicianId || null }),
+      ...(partsUsed !== undefined && { partsUsed }),
     },
   });
 
-  if (adminNotes !== undefined) return Response.json({ booking });
+  if (adminNotes !== undefined || technicianId !== undefined || partsUsed !== undefined) return Response.json({ booking });
 
   // Send status email to customer
   if (booking.email) {

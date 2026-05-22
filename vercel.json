@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/rebook-reminder",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/warranty-reminder",
+      "schedule": "0 9 * * *"
     }
   ]
 }

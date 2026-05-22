@@ -25,33 +25,86 @@ model Product {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  name      String
-  email     String    @unique
-  password  String
-  phone     String    @default("")
-  createdAt DateTime  @default(now())
-  orders    Order[]
-  bookings  Booking[]
-  reviews   ProductReview[]
-  address   Address?
+  id               String    @id @default(cuid())
+  name             String
+  email            String    @unique
+  password         String
+  phone            String    @default("")
+  unitModel        String    @default("")
+  installationDate DateTime?
+  warrantyExpiry   DateTime?
+  notes            String    @default("")
+  createdAt        DateTime  @default(now())
+  orders           Order[]
+  bookings         Booking[]
+  reviews          ProductReview[]
+  address          Address?
 }
 
 model Booking {
+  id                  String      @id @default(cuid())
+  userId              String?
+  user                User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  technicianId        String?
+  technician          Technician? @relation(fields: [technicianId], references: [id], onDelete: SetNull)
+  name                String
+  email               String
+  phone               String
+  address             String
+  service             String
+  preferredDate       String
+  notes               String      @default("")
+  adminNotes          String      @default("")
+  status              String      @default("pending")
+  unitModel           String      @default("")
+  installationDate    String      @default("")
+  partsUsed           Json?
+  photos              String[]
+  rebookReminderSent  Boolean     @default(false)
+  createdAt           DateTime    @default(now())
+}
+
+model Technician {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  phone     String    @default("")
+  password  String
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  bookings  Booking[]
+}
+
+model Lead {
+  id         String      @id @default(cuid())
+  name       String
+  email      String      @default("")
+  phone      String
+  source     String      @default("website")
+  service    String      @default("")
+  notes      String      @default("")
+  status     String      @default("new")
+  quotations Quotation[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model Quotation {
   id            String   @id @default(cuid())
-  userId        String?
-  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  name          String
-  email         String
-  phone         String
-  address       String
-  service       String
-  preferredDate String
+  leadId        String?
+  lead          Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  customerName  String
+  customerEmail String   @default("")
+  customerPhone String   @default("")
+  items         Json
+  subtotal      Float
+  discount      Float    @default(0)
+  total         Float
+  status        String   @default("draft")
   notes         String   @default("")
-  adminNotes          String   @default("")
-  status              String   @default("pending")
-  rebookReminderSent  Boolean  @default(false)
-  createdAt           DateTime @default(now())
+  validUntil    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Address {

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingBag, CalendarCheck, Boxes, LogOut, Users, Tag, Calendar } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, CalendarCheck, Boxes, LogOut, Users, Tag, Calendar, UserSquare2, Wrench, FileText } from 'lucide-react';
 
 const navItems = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -12,6 +12,9 @@ const navItems = [
   { label: 'Calendar', href: '/admin/calendar', icon: Calendar },
   { label: 'Inventory', href: '/admin/inventory', icon: Boxes },
   { label: 'Customers', href: '/admin/customers', icon: Users },
+  { label: 'Leads', href: '/admin/leads', icon: UserSquare2 },
+  { label: 'Technicians', href: '/admin/technicians', icon: Wrench },
+  { label: 'Quotations', href: '/admin/quotations', icon: FileText },
   { label: 'Promo Codes', href: '/admin/coupons', icon: Tag },
 ];
 
