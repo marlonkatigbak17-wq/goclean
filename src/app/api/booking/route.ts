@@ -52,7 +52,7 @@ export async function POST(request: Request) {
         headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: 'GoClean Bookings <onboarding@resend.dev>',
-          to: ['gocleanair@gmail.com', 'gocleanair3@gmail.com'],
+          to: ['gocleanair@gmail.com', 'gocleanair2@gmail.com', 'gocleanair3@gmail.com'],
           subject: `New Booking: ${service} — ${name} (${date})`,
           html,
         }),
