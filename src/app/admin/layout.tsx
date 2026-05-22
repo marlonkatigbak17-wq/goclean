@@ -34,7 +34,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="text-lg font-extrabold text-white">GoClean</div>
           <div className="text-xs text-blue-300 mt-0.5">Admin Dashboard</div>
         </div>
-        <nav className="flex-1 py-4">
+        <nav className="flex-1 py-4 overflow-y-auto">
           {navItems.map((item) => (
             <Link
               key={item.href}
