@@ -16,6 +16,10 @@ export async function POST(request: Request) {
   const subtotal = data.items.reduce((s: number, i: { qty: number; price: number }) => s + i.qty * i.price, 0);
   const discount = data.discount || 0;
   const total = subtotal - discount;
-  const quotation = await prisma.quotation.create({ data: { ...data, subtotal, total }, include: { lead: true } });
+  // sanitize empty strings for optional fields
+  const leadId = data.leadId || null;
+  const validUntil = data.validUntil ? new Date(data.validUntil) : null;
+  const { leadId: _l, validUntil: _v, ...rest } = data;
+  const quotation = await prisma.quotation.create({ data: { ...rest, subtotal, total, discount, leadId, validUntil }, include: { lead: true } });
   return Response.json(quotation);
 }

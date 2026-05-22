@@ -11,7 +11,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     data.subtotal = data.items.reduce((s: number, i: { qty: number; price: number }) => s + i.qty * i.price, 0);
     data.total = data.subtotal - (data.discount || 0);
   }
-  const q = await prisma.quotation.update({ where: { id }, data: { ...data, updatedAt: new Date() } });
+  const leadId = data.leadId !== undefined ? (data.leadId || null) : undefined;
+  const validUntil = data.validUntil !== undefined ? (data.validUntil ? new Date(data.validUntil) : null) : undefined;
+  const { leadId: _l, validUntil: _v, ...rest } = data;
+  const clean = { ...rest, ...(leadId !== undefined && { leadId }), ...(validUntil !== undefined && { validUntil }) };
+  const q = await prisma.quotation.update({ where: { id }, data: { ...clean, updatedAt: new Date() } });
   return Response.json(q);
 }
 
