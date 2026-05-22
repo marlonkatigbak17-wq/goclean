@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Menu, X, Phone, User } from 'lucide-react';
 import CartIcon from '@/components/shop/CartIcon';
 
@@ -38,7 +39,10 @@ function GocleanLogo() {
 }
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  if (pathname.startsWith('/admin') || pathname.startsWith('/technician')) return null;
 
   return (
     <header className="bg-[#0f1f5c] text-white sticky top-0 z-50 shadow-lg">
