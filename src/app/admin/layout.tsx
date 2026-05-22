@@ -55,6 +55,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       active ? 'bg-white/20 text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white'
     }`;
 
+  if (pathname === '/admin/login') return <>{children}</>;
+
   return (
     <div className="min-h-screen bg-gray-100">
 
