@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { jwtVerify } from 'jose';
 
 const loginAttempts = new Map<string, { count: number; reset: number }>();
 
@@ -16,8 +17,7 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
-
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Rate limit login endpoints
@@ -29,7 +29,32 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // AUTH DISABLED
+  // Protect all admin pages and API routes (except the login page/endpoint itself)
+  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+    const token = request.cookies.get('admin_auth')?.value;
+
+    if (!token) {
+      // Page request → redirect to login
+      if (!pathname.startsWith('/api/')) {
+        return NextResponse.redirect(new URL('/admin/login', request.url));
+      }
+      // API request → 401
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Verify the JWT
+    try {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+      const { payload } = await jwtVerify(token, secret);
+      if (payload.admin !== true) throw new Error('Not admin');
+    } catch {
+      if (!pathname.startsWith('/api/')) {
+        return NextResponse.redirect(new URL('/admin/login', request.url));
+      }
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+
   return NextResponse.next();
 }
 

@@ -31,9 +31,11 @@ export default function AdminBookingsPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/admin/bookings').then(r => r.json()),
-      fetch('/api/admin/technicians').then(r => r.json()),
-    ]).then(([bData, tData]) => {
+      fetch('/api/admin/bookings'),
+      fetch('/api/admin/technicians'),
+    ]).then(async ([bRes, tRes]) => {
+      if (bRes.status === 401) { window.location.href = '/admin/login'; return; }
+      const [bData, tData] = await Promise.all([bRes.json(), tRes.json()]);
       setBookings(bData.bookings ?? []);
       setTechs(Array.isArray(tData) ? tData.filter((t: Technician) => t.active) : []);
     }).finally(() => setLoading(false));
