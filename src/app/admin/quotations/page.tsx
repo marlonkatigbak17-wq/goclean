@@ -79,10 +79,28 @@ export default function QuotationsPage() {
   async function handleSave() {
     if (!panel) return;
     setSaving(true);
+    const payload = {
+      customerName: panel.customerName.trim(),
+      customerEmail: panel.customerEmail,
+      customerPhone: panel.customerPhone,
+      items: panel.items,
+      discount: panel.discount,
+      notes: panel.notes,
+      status: panel.status,
+      validUntil: panel.validUntil || null,
+      leadId: panel.leadId || null,
+    };
     const url = editId ? `/api/admin/quotations/${editId}` : '/api/admin/quotations';
     const method = editId ? 'PUT' : 'POST';
-    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...panel, validUntil: panel.validUntil || null }) });
-    if (res.ok) { await fetchQuotes(); setPanel(null); showToast(editId ? 'Quotation updated!' : 'Quotation created!'); }
+    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (res.ok) {
+      await fetchQuotes();
+      setPanel(null);
+      showToast(editId ? 'Quotation updated!' : 'Quotation created!');
+    } else {
+      showToast(`Error: ${data.error || 'Failed to save'}`);
+    }
     setSaving(false);
   }
 
