@@ -1,7 +1,35 @@
-import { Phone, Mail, MapPin, Clock, MessageCircle } from 'lucide-react';
+'use client';
+import { useState } from 'react';
+import { Phone, Mail, MapPin, Clock, MessageCircle, CheckCircle } from 'lucide-react';
 import FacebookFeed from '@/components/ui/FacebookFeed';
 
+const empty = () => ({ name: '', phone: '', email: '', subject: 'Service Inquiry', message: '' });
+
 export default function ContactPage() {
+  const [form, setForm] = useState(empty());
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+    if (res.ok) {
+      setSent(true);
+      setForm(empty());
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || 'Failed to send. Please try again.');
+    }
+    setLoading(false);
+  }
+
   return (
     <div className="py-16 px-4">
       <div className="max-w-7xl mx-auto">
@@ -17,9 +45,7 @@ export default function ContactPage() {
             <h2 className="text-xl font-bold text-[#1e3a5f] mb-6">Get in Touch</h2>
             <div className="space-y-5">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-blue-50 rounded-xl">
-                  <MapPin size={20} className="text-[#2563eb]" />
-                </div>
+                <div className="p-3 bg-blue-50 rounded-xl"><MapPin size={20} className="text-[#2563eb]" /></div>
                 <div>
                   <div className="font-semibold text-[#1e3a5f] text-sm">Address</div>
                   <span className="text-gray-600 text-sm">Seaoil Compound, Gen. Malvar,<br />Brgy. Tubigan, Binan, Laguna</span>
@@ -27,9 +53,7 @@ export default function ContactPage() {
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-blue-50 rounded-xl">
-                  <Phone size={20} className="text-[#2563eb]" />
-                </div>
+                <div className="p-3 bg-blue-50 rounded-xl"><Phone size={20} className="text-[#2563eb]" /></div>
                 <div>
                   <div className="font-semibold text-[#1e3a5f] text-sm">Phone / Viber</div>
                   <a href="tel:+639178237205" className="text-gray-600 hover:text-[#2563eb] transition-colors block text-sm">(0917) 823 7205</a>
@@ -38,9 +62,7 @@ export default function ContactPage() {
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-blue-50 rounded-xl">
-                  <Mail size={20} className="text-[#2563eb]" />
-                </div>
+                <div className="p-3 bg-blue-50 rounded-xl"><Mail size={20} className="text-[#2563eb]" /></div>
                 <div>
                   <div className="font-semibold text-[#1e3a5f] text-sm">Email</div>
                   <a href="mailto:gocleanair@gmail.com" className="text-gray-600 hover:text-[#2563eb] transition-colors text-sm">gocleanair@gmail.com</a>
@@ -48,9 +70,7 @@ export default function ContactPage() {
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-blue-50 rounded-xl">
-                  <Clock size={20} className="text-[#2563eb]" />
-                </div>
+                <div className="p-3 bg-blue-50 rounded-xl"><Clock size={20} className="text-[#2563eb]" /></div>
                 <div>
                   <div className="font-semibold text-[#1e3a5f] text-sm">Business Hours</div>
                   <span className="text-gray-600 text-sm">Monday – Saturday: 8:00 AM – 6:00 PM</span>
@@ -61,26 +81,17 @@ export default function ContactPage() {
             <div className="mt-8">
               <div className="font-semibold text-[#1e3a5f] text-sm mb-3">Follow &amp; Message Us</div>
               <div className="flex gap-3">
-                <a
-                  href="https://www.facebook.com/gocleanaircon"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
-                >
+                <a href="https://www.facebook.com/gocleanaircon" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
                   <MessageCircle size={16} /> Facebook Page
                 </a>
-                <a
-                  href="https://m.me/gocleanaircon"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
-                >
+                <a href="https://m.me/gocleanaircon" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors">
                   <MessageCircle size={16} /> Messenger
                 </a>
               </div>
             </div>
 
-            {/* Service area */}
             <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-5">
               <div className="font-semibold text-[#1e3a5f] text-sm mb-2">Service Areas</div>
               <p className="text-gray-600 text-sm">Binan, Santa Rosa, Cabuyao, Calamba, San Pedro, Muntinlupa, Las Piñas, Makati, BGC, Ortigas, Pasig, Quezon City, and surrounding areas in Laguna and Metro Manila.</p>
@@ -90,40 +101,59 @@ export default function ContactPage() {
           {/* Contact form */}
           <div className="bg-gray-50 border rounded-2xl p-8">
             <h2 className="text-xl font-bold text-[#1e3a5f] mb-6">Send a Message</h2>
-            <form className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input type="text" className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Your name" />
+
+            {sent ? (
+              <div className="text-center py-10">
+                <CheckCircle size={48} className="text-green-500 mx-auto mb-4" />
+                <div className="text-lg font-bold text-[#1e3a5f] mb-2">Message Sent!</div>
+                <p className="text-gray-500 text-sm mb-6">We&apos;ll get back to you within 24 hours.</p>
+                <button onClick={() => setSent(false)} className="px-5 py-2 border border-gray-300 text-gray-600 text-sm rounded-lg hover:bg-gray-100">
+                  Send Another Message
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                    <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+                      className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Your name" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                    <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
+                      className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="09XX XXX XXXX" />
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                  <input type="tel" className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="09XX XXX XXXX" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="your@email.com" />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="your@email.com" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                <select className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
-                  <option>Service Inquiry</option>
-                  <option>Product / Aircon Inquiry</option>
-                  <option>Quotation Request</option>
-                  <option>Maintenance Contract</option>
-                  <option>Complaint / Feedback</option>
-                  <option>Other</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                <textarea rows={4} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none" placeholder="How can we help you?" />
-              </div>
-              <button type="submit" className="w-full py-3 bg-[#1e3a5f] text-white font-bold rounded-lg hover:bg-[#152d4a] transition-colors">
-                Send Message
-              </button>
-            </form>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                  <select value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    <option>Service Inquiry</option>
+                    <option>Product / Aircon Inquiry</option>
+                    <option>Quotation Request</option>
+                    <option>Maintenance Contract</option>
+                    <option>Complaint / Feedback</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
+                  <textarea rows={4} required value={form.message} onChange={e => setForm({ ...form, message: e.target.value })}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none" placeholder="How can we help you?" />
+                </div>
+                {error && <p className="text-sm text-red-500">{error}</p>}
+                <button type="submit" disabled={loading}
+                  className="w-full py-3 bg-[#1e3a5f] text-white font-bold rounded-lg hover:bg-[#152d4a] disabled:opacity-50 transition-colors">
+                  {loading ? 'Sending...' : 'Send Message'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
 

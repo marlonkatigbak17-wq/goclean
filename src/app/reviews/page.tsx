@@ -64,8 +64,8 @@ export default function ReviewsPage() {
           <h2 className="text-xl font-bold text-[#1e3a5f] mb-2">Had a great experience?</h2>
           <p className="text-gray-500 text-sm mb-4">Leave us a review on Google or Facebook and help others find us.</p>
           <div className="flex justify-center gap-4">
-            <a href="#" className="px-5 py-2 bg-[#1e3a5f] text-white text-sm font-bold rounded hover:bg-[#152d4a] transition-colors">Google Review</a>
-            <a href="#" className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded hover:bg-blue-700 transition-colors">Facebook Review</a>
+            <a href="https://www.google.com/search?q=GoClean+Aircon+Supplies+Services+Binan+Laguna" target="_blank" rel="noopener noreferrer" className="px-5 py-2 bg-[#1e3a5f] text-white text-sm font-bold rounded hover:bg-[#152d4a] transition-colors">Google Review</a>
+            <a href="https://www.facebook.com/gocleanaircon/reviews" target="_blank" rel="noopener noreferrer" className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded hover:bg-blue-700 transition-colors">Facebook Review</a>
           </div>
         </div>
       </div>
