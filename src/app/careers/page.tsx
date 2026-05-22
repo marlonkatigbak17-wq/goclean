@@ -157,11 +157,22 @@ export default function CareersPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <section className="bg-[#0f1f5c] text-white py-16 px-4 text-center">
-        <h1 className="text-4xl font-extrabold mb-3">Join the GoClean Team</h1>
-        <p className="text-blue-200 text-lg max-w-xl mx-auto">
-          We're looking for skilled and motivated people to help us deliver world-class aircon services across Biñan and Laguna.
-        </p>
+      <section className="relative bg-[#0f1f5c] text-white overflow-hidden">
+        <div className="absolute inset-0">
+          <img src="/images/technician.jpg" alt="GoClean Technician" className="w-full h-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0f1f5c] via-[#0f1f5c]/80 to-transparent" />
+        </div>
+        <div className="relative max-w-4xl mx-auto px-6 py-20 flex flex-col md:flex-row items-center gap-8">
+          <div className="flex-1 text-center md:text-left">
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">Join the GoClean Team</h1>
+            <p className="text-blue-200 text-lg max-w-xl">
+              We're looking for skilled and motivated people to help us deliver world-class aircon services across Biñan and Laguna.
+            </p>
+          </div>
+          <div className="hidden md:block w-72 h-80 rounded-2xl overflow-hidden shadow-2xl shrink-0">
+            <img src="/images/technician.jpg" alt="GoClean Technician at work" className="w-full h-full object-cover object-top" />
+          </div>
+        </div>
       </section>
 
       <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
