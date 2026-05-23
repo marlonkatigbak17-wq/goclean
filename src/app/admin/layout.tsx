@@ -6,7 +6,7 @@ import { useState } from 'react';
 import {
   LayoutDashboard, Package, ShoppingBag, CalendarCheck,
   Boxes, LogOut, Users, Tag, Calendar, UserSquare2, Wrench,
-  FileText, Menu, X, ChevronDown, ContactRound, MessageSquare, MapPin, Settings, Briefcase,
+  FileText, Menu, X, ChevronDown, ContactRound, MessageSquare, MapPin, Settings, Briefcase, Share2,
 } from 'lucide-react';
 
 const mainNav = [
@@ -28,6 +28,7 @@ const crmNav = [
 
 const extraNav = [
   { label: 'Careers',     href: '/admin/careers',    icon: Briefcase },
+  { label: 'Social Media',href: '/admin/social',     icon: Share2 },
   { label: 'SMS Blast',   href: '/admin/sms-blast',  icon: MessageSquare },
   { label: 'Promo Codes', href: '/admin/coupons',    icon: Tag },
   { label: 'Settings',    href: '/admin/settings',   icon: Settings },

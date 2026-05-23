@@ -1,0 +1,76 @@
+import { requireAdmin } from '@/lib/adminAuth';
+
+export const dynamic = 'force-dynamic';
+
+export async function POST(request: Request) {
+  if (!await requireAdmin()) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const formData = await request.formData();
+  const image = formData.get('image') as File | null;
+  const postType = formData.get('postType') as string;
+  const notes = formData.get('notes') as string;
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return Response.json({ error: 'AI not configured' }, { status: 500 });
+
+  const postTypeContext: Record<string, string> = {
+    promo:        'a promotional post highlighting a special offer or discount',
+    service:      'a service feature post showcasing our aircon cleaning or repair service',
+    product:      'a product showcase post for an aircon unit we sell',
+    tips:         'an educational tips post about aircon maintenance',
+    announcement: 'a business announcement post',
+    'before-after': 'a before-and-after cleaning result post to show the quality of our work',
+  };
+
+  const context = postTypeContext[postType] || 'a general business post';
+
+  const messages: object[] = [];
+
+  if (image) {
+    const buffer = await image.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString('base64');
+    const mediaType = image.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+
+    messages.push({
+      role: 'user',
+      content: [
+        { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+        {
+          type: 'text',
+          text: `Gumawa ng ${context} para sa aming Facebook page base sa larawang ito. ${notes ? `Dagdag na impormasyon: ${notes}` : ''} Isulat sa Tagalog o Taglish — mainit, engaging, at propesyonal. Lagyan ng 5-8 relevant na hashtags sa dulo. Format: caption lang tapos hashtags, walang dagdag na labels.`,
+        },
+      ],
+    });
+  } else {
+    messages.push({
+      role: 'user',
+      content: `Gumawa ng ${context} para sa aming GoClean Aircon Facebook page. ${notes ? `Impormasyon: ${notes}` : ''} Isulat sa Tagalog o Taglish — mainit, engaging, at propesyonal. Lagyan ng 5-8 relevant na hashtags sa dulo. Format: caption lang tapos hashtags, walang dagdag na labels.`,
+    });
+  }
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 800,
+      system: `Ikaw ay social media manager ng GoClean Aircon Supplies and Services Co., isang Filipino aircon cleaning at repair company sa Binan, Laguna. Sumusulat ka ng engaging na Facebook posts sa Tagalog/Taglish na mainit, propesyonal, at tunay. Business info: Phone 0917 117 8605, Website gocleanair.co. Services: aircon cleaning (basic at chemical), installation, repair, freon charging, troubleshooting. Service areas: Binan, Santa Rosa, Cabuyao, Calamba, San Pedro, Los Banos at nearby Laguna areas.`,
+      messages,
+    }),
+  });
+
+  if (!res.ok) return Response.json({ error: 'AI generation failed' }, { status: 500 });
+
+  const data = await res.json();
+  const full = data.content?.[0]?.text || '';
+
+  const hashtagIndex = full.search(/#\w/);
+  const caption   = hashtagIndex > 0 ? full.slice(0, hashtagIndex).trim() : full.trim();
+  const hashtags  = hashtagIndex > 0 ? full.slice(hashtagIndex).trim() : '';
+
+  return Response.json({ caption, hashtags, full });
+}
