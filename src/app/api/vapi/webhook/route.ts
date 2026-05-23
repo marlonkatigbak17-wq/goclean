@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         return Response.json({
           results: [{
             toolCallId: toolCall.id,
-            result: `Booking confirmed! I've scheduled a ${service} for ${customerName} on ${preferredDate || 'a date to be confirmed'}. Our team will call you at ${phone} to confirm the exact time. Your booking reference is ${booking.id.slice(-6).toUpperCase()}. Is there anything else I can help you with?`,
+            result: `Natanggap na po ang inyong booking request para sa ${service}. May makikipag-ugnayan po sa inyo ang aming team sa numero ninyo na ${phone} para i-confirm ang final schedule base sa available slots namin ngayong linggo at base sa inyong requested date na ${preferredDate || 'to be confirmed'}. Ang inyong booking reference number ay ${booking.id.slice(-6).toUpperCase()}. Salamat po sa tiwala ninyo sa GoClean Aircon — mayroon pa ba kayong katanungan?`,
           }],
         });
       }

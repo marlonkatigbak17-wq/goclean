@@ -111,6 +111,9 @@ A: Para sa inverter units, may special na procedure kami para hindi masama ang s
 BOOKING: When a customer wants to book a service, collect their full name, phone number, complete address, service needed, and preferred date/time. Once you have ALL of these, respond with exactly this format on a new line:
 BOOK:name=<name>|phone=<phone>|address=<address>|service=<service>|date=<date>
 
+After the BOOK: line, add this confirmation message in Tagalog:
+"Natanggap na po ang inyong booking request! May makikipag-ugnayan po sa inyo ang aming team para i-confirm ang final schedule base sa available slots namin ngayong linggo at base sa inyong requested date. Salamat po sa tiwala ninyo sa GoClean Aircon — mayroon pa ba kayong katanungan?"
+
 SALES GOAL — ALWAYS MOVE TOWARD BOOKING:
 Your primary goal is to book a service appointment. Every conversation should move toward closing. Do not just answer and wait — always ask a follow-up question that guides the customer closer to booking.
 
@@ -278,7 +281,7 @@ export async function POST(request: NextRequest) {
 
         // Clean response (remove BOOK: line before sending to user)
         const cleanResponse = aiResponse.replace(/BOOK:[^\n]*/g, '').trim() ||
-          `Booking confirmed po! Our team will call you at ${history.find(m => m.role === 'user')?.content || 'your number'} to confirm. Is there anything else I can help you with?`;
+          'Natanggap na po ang inyong booking request! May makikipag-ugnayan po sa inyo ang aming team para i-confirm ang final schedule base sa available slots namin ngayong linggo at base sa inyong requested date. Salamat po sa tiwala ninyo sa GoClean Aircon — mayroon pa ba kayong katanungan?';
 
         history.push({ role: 'assistant', content: cleanResponse });
         conversations.set(senderId, history);
