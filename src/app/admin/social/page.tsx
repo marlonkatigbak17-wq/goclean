@@ -36,6 +36,7 @@ export default function SocialMediaPage() {
   const [scheduledAt, setScheduledAt] = useState('');
   const [toast, setToast]           = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [dragging, setDragging]     = useState(false);
+  const [fbDiag, setFbDiag]         = useState<string | null>(null);
   const [weekAnchor, setWeekAnchor] = useState(new Date());
   const [scheduled, setScheduled]   = useState<ScheduledPost[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -148,6 +149,12 @@ export default function SocialMediaPage() {
     loadScheduled();
   }
 
+  async function testConnection() {
+    const res  = await fetch('/api/admin/social/test');
+    const data = await res.json();
+    setFbDiag(JSON.stringify(data, null, 2));
+  }
+
   function resetForm() {
     setCaption(''); setHashtags(''); setMedia([]); setNotes(''); setScheduledAt('');
   }
@@ -167,10 +174,22 @@ export default function SocialMediaPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Social Media Manager</h1>
-        <p className="text-gray-500 text-sm mt-1">Upload photos or videos, let AI write your post, then publish now or schedule for later.</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Social Media Manager</h1>
+          <p className="text-gray-500 text-sm mt-1">Upload photos or videos, let AI write your post, then publish now or schedule for later.</p>
+        </div>
+        <button onClick={testConnection} className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors">
+          Test FB Connection
+        </button>
       </div>
+
+      {fbDiag && (
+        <div className={`rounded-xl border p-4 text-xs font-mono whitespace-pre-wrap ${fbDiag.includes('"error"') ? 'bg-red-50 border-red-200 text-red-800' : 'bg-green-50 border-green-200 text-green-800'}`}>
+          {fbDiag}
+          <button onClick={() => setFbDiag(null)} className="block mt-2 text-gray-400 hover:text-gray-600">Close</button>
+        </div>
+      )}
 
       {toast && (
         <div className={`fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${toast.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
