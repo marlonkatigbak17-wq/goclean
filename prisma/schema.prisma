@@ -186,3 +186,18 @@ model Order {
   status        String   @default("paid")
   createdAt     DateTime @default(now())
 }
+
+
+model SocialPost {
+  id          String    @id @default(cuid())
+  caption     String
+  hashtags    String    @default("")
+  mediaUrls   Json      @default("[]")
+  postType    String    @default("service")
+  notes       String    @default("")
+  scheduledAt DateTime
+  publishedAt DateTime?
+  status      String    @default("scheduled")
+  fbPostId    String?
+  createdAt   DateTime  @default(now())
+}

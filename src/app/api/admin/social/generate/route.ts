@@ -9,9 +9,9 @@ export async function POST(request: Request) {
   const postType = formData.get('postType') as string;
   const notes    = formData.get('notes') as string;
 
-  // Collect all uploaded images
-  const imageEntries = [...formData.entries()].filter(([k]) => k.startsWith('image'));
-  const images = imageEntries.map(([, v]) => v as File).filter(f => f.size > 0);
+  // Collect all uploaded media (images only for vision — videos described by notes)
+  const imageEntries = [...formData.entries()].filter(([k]) => k.startsWith('media'));
+  const images = imageEntries.map(([, v]) => v as File).filter(f => f.size > 0 && f.type.startsWith('image/'));
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return Response.json({ error: 'AI not configured' }, { status: 500 });
