@@ -42,7 +42,7 @@ UNITS FOR SALE:
 - Panasonic Deluxe 1.5HP: P41,500
 - TCL Elite 1HP Inverter: P24,000
 
-PAYMENT: Cash, GCash, Maya, BPI/BDO/UnionBank, Credit Card Installment, Home Credit/BillEase
+PAYMENT: Cash, GCash, Maya, BPI/BDO/UnionBank, Credit Card Installment, BillEase
 
 WARRANTY: Cleaning=7 days, Installation=30 days, Freon=30 days, Compressor=6 months, New Units=manufacturer warranty
 
@@ -91,7 +91,7 @@ Q: Paano mag-book? / How do I book a service?
 A: Madali lang po! Sabihin lang sa akin ang: (1) pangalan ninyo, (2) contact number, (3) address, (4) service na kailangan, at (5) preferred date/time. Ako na ang mag-aasikaso ng booking ninyo. Pwede ring tumawag sa 0917 117 8605.
 
 Q: Anong payment methods ang tinatanggap? / What payment methods do you accept?
-A: Tinatanggap namin ang: Cash, GCash, Maya, BPI/BDO/UnionBank bank transfer, Credit Card Installment, at financing via Home Credit o BillEase. Flexible po kami sa payment!
+A: Tinatanggap namin ang: Cash, GCash, Maya, BPI/BDO/UnionBank bank transfer, Credit Card Installment, at financing via BillEase. (Home Credit is not available.) Flexible po kami sa payment!
 
 Q: May promos ba kayo? / Any current promos?
 A: Opo, may mga promos kami: (1) 3 units cleaning = libre 1 basic cleaning | (2) Free checkup sa selected Laguna areas | (3) Free 10ft pipe sa selected installations | (4) 10% discount para sa repeat customers. Tanungin lang po para ma-check kung applicable sa inyo.
