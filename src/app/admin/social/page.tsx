@@ -1,20 +1,21 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Upload, Sparkles, Send, X, ImageIcon, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, Sparkles, Send, X, ImageIcon, CheckCircle, AlertCircle, Loader2, Plus } from 'lucide-react';
 
 const POST_TYPES = [
-  { value: 'promo',        label: 'Promo / Discount',    emoji: '🎉' },
-  { value: 'service',      label: 'Service Feature',      emoji: '🔧' },
-  { value: 'product',      label: 'Product Showcase',     emoji: '❄️' },
-  { value: 'tips',         label: 'Tips & Maintenance',   emoji: '💡' },
-  { value: 'before-after', label: 'Before & After',       emoji: '✨' },
-  { value: 'announcement', label: 'Announcement',         emoji: '📢' },
+  { value: 'promo',          label: 'Promo / Discount',  emoji: '🎉' },
+  { value: 'service',        label: 'Service Feature',    emoji: '🔧' },
+  { value: 'product',        label: 'Product Showcase',   emoji: '❄️' },
+  { value: 'tips',           label: 'Tips & Maintenance', emoji: '💡' },
+  { value: 'before-after',   label: 'Before & After',     emoji: '✨' },
+  { value: 'announcement',   label: 'Announcement',       emoji: '📢' },
 ];
 
+interface ImageItem { file: File; preview: string; }
+
 export default function SocialMediaPage() {
-  const [image, setImage]           = useState<File | null>(null);
-  const [preview, setPreview]       = useState<string>('');
+  const [images, setImages]         = useState<ImageItem[]>([]);
   const [postType, setPostType]     = useState('service');
   const [notes, setNotes]           = useState('');
   const [caption, setCaption]       = useState('');
@@ -30,30 +31,32 @@ export default function SocialMediaPage() {
     setTimeout(() => setToast(null), 5000);
   }
 
-  function handleFile(file: File) {
-    if (!file.type.startsWith('image/')) { showToast('error', 'Image files lang po ang pwede.'); return; }
-    if (file.size > 10 * 1024 * 1024) { showToast('error', 'Maximum 10MB lang ang image.'); return; }
-    setImage(file);
-    setPreview(URL.createObjectURL(file));
+  function addFiles(files: FileList | File[]) {
+    const arr = Array.from(files);
+    const valid = arr.filter(f => {
+      if (!f.type.startsWith('image/')) { showToast('error', `${f.name} is not an image file.`); return false; }
+      if (f.size > 10 * 1024 * 1024)   { showToast('error', `${f.name} exceeds 10MB limit.`);   return false; }
+      return true;
+    });
+    const newItems: ImageItem[] = valid.map(f => ({ file: f, preview: URL.createObjectURL(f) }));
+    setImages(prev => {
+      const combined = [...prev, ...newItems];
+      return combined.slice(0, 10); // max 10 photos
+    });
   }
 
-  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
+  function removeImage(index: number) {
+    setImages(prev => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
   }
 
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleFile(file);
+    addFiles(e.dataTransfer.files);
   }, []);
-
-  function removeImage() {
-    setImage(null);
-    setPreview('');
-    if (fileRef.current) fileRef.current.value = '';
-  }
 
   async function generate() {
     setGenerating(true);
@@ -61,7 +64,7 @@ export default function SocialMediaPage() {
     setHashtags('');
     try {
       const fd = new FormData();
-      if (image) fd.append('image', image);
+      images.forEach((img, i) => fd.append(`image_${i}`, img.file));
       fd.append('postType', postType);
       fd.append('notes', notes);
 
@@ -71,30 +74,30 @@ export default function SocialMediaPage() {
       setCaption(data.caption);
       setHashtags(data.hashtags);
     } catch (e: unknown) {
-      showToast('error', e instanceof Error ? e.message : 'Hindi nagawa ang post. Subukan ulit.');
+      showToast('error', e instanceof Error ? e.message : 'Failed to generate. Please try again.');
     } finally {
       setGenerating(false);
     }
   }
 
   async function publish() {
-    if (!caption.trim()) { showToast('error', 'Walang caption. I-generate muna ang post.'); return; }
+    if (!caption.trim()) { showToast('error', 'No caption yet. Please generate a post first.'); return; }
     setPublishing(true);
     try {
       const fd = new FormData();
-      if (image) fd.append('image', image);
+      images.forEach((img, i) => fd.append(`image_${i}`, img.file));
       fd.append('caption', `${caption}\n\n${hashtags}`.trim());
 
       const res  = await fetch('/api/admin/social/publish', { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Publish failed');
-      showToast('success', 'Nai-post na sa Facebook page ninyo!');
+      showToast('success', 'Successfully posted to your Facebook page!');
       setCaption('');
       setHashtags('');
-      removeImage();
+      setImages([]);
       setNotes('');
     } catch (e: unknown) {
-      showToast('error', e instanceof Error ? e.message : 'Hindi nai-post. Subukan ulit.');
+      showToast('error', e instanceof Error ? e.message : 'Failed to publish. Please try again.');
     } finally {
       setPublishing(false);
     }
@@ -106,11 +109,11 @@ export default function SocialMediaPage() {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Social Media Manager</h1>
-        <p className="text-gray-500 text-sm mt-1">Mag-upload ng photo, piliin ang post type, at hayaan si AI gumawa ng post para sa inyong Facebook page.</p>
+        <p className="text-gray-500 text-sm mt-1">Upload up to 10 photos, choose a post type, and let AI write your Facebook post.</p>
       </div>
 
       {toast && (
-        <div className={`fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium transition-all ${toast.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+        <div className={`fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium ${toast.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
           {toast.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
           {toast.msg}
         </div>
@@ -118,21 +121,46 @@ export default function SocialMediaPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* LEFT — Upload & Configure */}
+        {/* LEFT */}
         <div className="space-y-5">
 
-          {/* Image Upload */}
+          {/* Photo Upload */}
           <div className="bg-white rounded-2xl shadow-sm border p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"><ImageIcon size={16} /> Upload Photo</h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2"><ImageIcon size={16} /> Photos</h2>
+              <span className="text-xs text-gray-400">{images.length}/10 photos</span>
+            </div>
 
-            {preview ? (
-              <div className="relative rounded-xl overflow-hidden">
-                <img src={preview} alt="Preview" className="w-full max-h-64 object-cover rounded-xl" />
-                <button onClick={removeImage} className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80">
-                  <X size={14} />
-                </button>
+            {/* Thumbnail grid */}
+            {images.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                {images.map((img, i) => (
+                  <div key={i} className="relative group aspect-square">
+                    <img src={img.preview} alt="" className="w-full h-full object-cover rounded-lg" />
+                    <button
+                      onClick={() => removeImage(i)}
+                      className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+
+                {/* Add more button inside grid */}
+                {images.length < 10 && (
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    className="aspect-square border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                  >
+                    <Plus size={18} />
+                    <span className="text-[10px] mt-0.5">Add</span>
+                  </button>
+                )}
               </div>
-            ) : (
+            )}
+
+            {/* Drop zone (shown when no images or as add-more area) */}
+            {images.length === 0 && (
               <div
                 onDragOver={e => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
@@ -141,16 +169,24 @@ export default function SocialMediaPage() {
                 className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${dragging ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'}`}
               >
                 <Upload size={28} className="mx-auto text-gray-400 mb-2" />
-                <p className="text-sm text-gray-500">Drag & drop o <span className="text-blue-600 font-medium">i-click para pumili</span></p>
-                <p className="text-xs text-gray-400 mt-1">JPG, PNG, WEBP — max 10MB</p>
+                <p className="text-sm text-gray-500">Drag & drop or <span className="text-blue-600 font-medium">click to select</span></p>
+                <p className="text-xs text-gray-400 mt-1">Up to 10 photos · JPG, PNG, WEBP · Max 10MB each</p>
               </div>
             )}
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFileChange} />
+
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={e => { if (e.target.files) addFiles(e.target.files); e.target.value = ''; }}
+            />
           </div>
 
           {/* Post Type */}
           <div className="bg-white rounded-2xl shadow-sm border p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">Uri ng Post</h2>
+            <h2 className="text-sm font-semibold text-gray-700 mb-3">Post Type</h2>
             <div className="grid grid-cols-2 gap-2">
               {POST_TYPES.map(t => (
                 <button
@@ -166,49 +202,48 @@ export default function SocialMediaPage() {
 
           {/* Notes */}
           <div className="bg-white rounded-2xl shadow-sm border p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">Dagdag na Impormasyon <span className="text-gray-400 font-normal">(optional)</span></h2>
+            <h2 className="text-sm font-semibold text-gray-700 mb-3">Additional Notes <span className="text-gray-400 font-normal">(optional)</span></h2>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={3}
-              placeholder="Hal. 'Split type chemical cleaning, customer sa Binan, bago palinis' o 'Carrier 1HP inverter unit on sale'"
+              placeholder="e.g. 'Chemical cleaning, before and after photos, unit in Binan' or 'Carrier 1HP inverter on sale this week'"
               className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-blue-200 placeholder-gray-400"
             />
           </div>
 
-          {/* Generate Button */}
           <button
             onClick={generate}
             disabled={generating}
             className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#0f1f5c] text-white rounded-xl font-semibold hover:bg-[#1a2f7a] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
             {generating ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-            {generating ? 'Ginagawa ng AI ang post...' : 'Gumawa ng Post'}
+            {generating ? 'AI is writing your post...' : 'Generate Post'}
           </button>
         </div>
 
-        {/* RIGHT — Preview & Publish */}
+        {/* RIGHT */}
         <div className="space-y-5">
           <div className="bg-white rounded-2xl shadow-sm border p-5 h-full flex flex-col">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"><Send size={16} /> Generated Post</h2>
+            <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2"><Send size={16} /> Preview & Publish</h2>
 
             {!caption && !generating && (
               <div className="flex-1 flex flex-col items-center justify-center text-center py-12 text-gray-400">
                 <Sparkles size={36} className="mb-3 opacity-30" />
-                <p className="text-sm">I-upload ang photo, piliin ang post type,<br />tapos pindutin ang "Gumawa ng Post".</p>
+                <p className="text-sm">Upload photos, choose a post type,<br />then click "Generate Post".</p>
               </div>
             )}
 
             {generating && (
               <div className="flex-1 flex flex-col items-center justify-center py-12 text-gray-400">
                 <Loader2 size={32} className="animate-spin mb-3" />
-                <p className="text-sm">Ginagawa ng AI ang inyong post...</p>
+                <p className="text-sm">AI is writing your post...</p>
               </div>
             )}
 
             {caption && !generating && (
               <div className="flex-1 flex flex-col gap-4">
-                {/* Facebook-like preview header */}
+                {/* Facebook preview */}
                 <div className="bg-gray-50 rounded-xl p-4 border">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-8 h-8 rounded-full bg-[#0f1f5c] flex items-center justify-center text-white text-xs font-bold">GC</div>
@@ -217,40 +252,38 @@ export default function SocialMediaPage() {
                       <p className="text-[10px] text-gray-400">Just now · Facebook</p>
                     </div>
                   </div>
-                  {preview && <img src={preview} alt="" className="w-full rounded-lg mb-3 max-h-48 object-cover" />}
+                  {images.length > 0 && (
+                    <div className={`grid gap-1 mb-3 rounded-lg overflow-hidden ${images.length === 1 ? 'grid-cols-1' : images.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                      {images.slice(0, 6).map((img, i) => (
+                        <div key={i} className="relative">
+                          <img src={img.preview} alt="" className="w-full h-24 object-cover" />
+                          {i === 5 && images.length > 6 && (
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg">+{images.length - 6}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <p className="text-xs text-gray-700 whitespace-pre-wrap">{caption}</p>
                   {hashtags && <p className="text-xs text-blue-600 mt-1">{hashtags}</p>}
                 </div>
 
                 <div>
                   <label className="text-xs font-semibold text-gray-600 block mb-1">Caption</label>
-                  <textarea
-                    value={caption}
-                    onChange={e => setCaption(e.target.value)}
-                    rows={5}
-                    className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-blue-200"
-                  />
+                  <textarea value={caption} onChange={e => setCaption(e.target.value)} rows={5}
+                    className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-blue-200" />
                 </div>
 
                 <div>
                   <label className="text-xs font-semibold text-gray-600 block mb-1">Hashtags</label>
-                  <textarea
-                    value={hashtags}
-                    onChange={e => setHashtags(e.target.value)}
-                    rows={2}
-                    className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-blue-200 text-blue-600"
-                  />
+                  <textarea value={hashtags} onChange={e => setHashtags(e.target.value)} rows={2}
+                    className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-blue-200 text-blue-600" />
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className={`text-xs ${charCount > 500 ? 'text-orange-500' : 'text-gray-400'}`}>
-                    {charCount} characters
-                  </span>
-                  <button
-                    onClick={generate}
-                    className="text-xs text-blue-600 hover:underline flex items-center gap-1"
-                  >
-                    <Sparkles size={12} /> I-regenerate
+                  <span className={`text-xs ${charCount > 500 ? 'text-orange-500' : 'text-gray-400'}`}>{charCount} characters</span>
+                  <button onClick={generate} className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+                    <Sparkles size={12} /> Regenerate
                   </button>
                 </div>
 
@@ -260,7 +293,7 @@ export default function SocialMediaPage() {
                   className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#1877F2] text-white rounded-xl font-semibold hover:bg-[#166fe5] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
                 >
                   {publishing ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-                  {publishing ? 'Nagpo-post sa Facebook...' : 'I-post sa Facebook Page'}
+                  {publishing ? 'Posting to Facebook...' : `Post to Facebook Page${images.length > 1 ? ` (${images.length} photos)` : ''}`}
                 </button>
               </div>
             )}
