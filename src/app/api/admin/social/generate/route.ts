@@ -37,14 +37,14 @@ export async function POST(request: Request) {
         { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
         {
           type: 'text',
-          text: `Gumawa ng ${context} para sa aming Facebook page base sa larawang ito. ${notes ? `Dagdag na impormasyon: ${notes}` : ''} Isulat sa Tagalog o Taglish — mainit, engaging, at propesyonal. Lagyan ng 5-8 relevant na hashtags sa dulo. Format: caption lang tapos hashtags, walang dagdag na labels.`,
+          text: `Write ${context} for our Facebook page based on this image. ${notes ? `Additional context: ${notes}` : ''} Write in English only — engaging, warm, and professional. Include 5-8 relevant hashtags at the end. Format: caption only followed by hashtags, no extra labels.`,
         },
       ],
     });
   } else {
     messages.push({
       role: 'user',
-      content: `Gumawa ng ${context} para sa aming GoClean Aircon Facebook page. ${notes ? `Impormasyon: ${notes}` : ''} Isulat sa Tagalog o Taglish — mainit, engaging, at propesyonal. Lagyan ng 5-8 relevant na hashtags sa dulo. Format: caption lang tapos hashtags, walang dagdag na labels.`,
+      content: `Write ${context} for our GoClean Aircon Facebook page. ${notes ? `Additional context: ${notes}` : ''}Write in English only — engaging, warm, and professional. Include 5-8 relevant hashtags at the end. Format: caption only followed by hashtags, no extra labels.`,
     });
   }
 
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 800,
-      system: `Ikaw ay social media manager ng GoClean Aircon Supplies and Services Co., isang Filipino aircon cleaning at repair company sa Binan, Laguna. Sumusulat ka ng engaging na Facebook posts sa Tagalog/Taglish na mainit, propesyonal, at tunay. Business info: Phone 0917 117 8605, Website gocleanair.co. Services: aircon cleaning (basic at chemical), installation, repair, freon charging, troubleshooting. Service areas: Binan, Santa Rosa, Cabuyao, Calamba, San Pedro, Los Banos at nearby Laguna areas.`,
+      system: `You are the social media manager for GoClean Aircon Supplies and Services Co., an aircon cleaning and repair company based in Binan, Laguna, Philippines. Write all Facebook posts in English only — engaging, professional, and warm. Business info: Phone 0917 117 8605, Website gocleanair.co. Services: aircon cleaning (basic and chemical), installation, repair, freon charging, troubleshooting. Service areas: Binan, Santa Rosa, Cabuyao, Calamba, San Pedro, Los Banos and nearby Laguna areas.`,
       messages,
     }),
   });
