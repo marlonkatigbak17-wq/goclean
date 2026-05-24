@@ -106,7 +106,7 @@ export default function ChatWidget() {
             </div>
             <div className="flex-1">
               <p className="text-white font-bold text-sm">Christine</p>
-              <p className="text-blue-200 text-xs">GoClean AI Assistant · Online</p>
+              <p className="text-blue-200 text-xs">GoClean Chat Assistant · Online</p>
             </div>
             <button onClick={() => setStage('closed')} className="text-blue-200 hover:text-white transition-colors p-1">
               <ChevronDown size={18} />
