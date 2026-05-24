@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Wrench, ShoppingBag, Star, CheckCircle, ArrowRight, Phone, ShoppingCart, PackageCheck, Truck, Zap } from 'lucide-react';
+import { Wrench, ShoppingBag, Star, CheckCircle, ArrowRight, Phone, ShoppingCart, PackageCheck, Truck, Zap, XCircle, Info } from 'lucide-react';
 import { products } from '@/lib/products';
 import { formatPrice } from '@/lib/utils';
 import ProductImage from '@/components/shop/ProductImage';
@@ -63,8 +63,12 @@ export default function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-[#1e3a5f] to-[#0f2140] text-white py-20 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
+      <section className="relative text-white py-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img src="/hero-bg.png" alt="" className="w-full h-full object-cover object-center" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a5f]/85 to-[#0f2140]/90" />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
           <div className="flex-1">
             <div className="inline-block bg-[#f0a500]/20 text-[#f0a500] text-xs font-semibold px-3 py-1 rounded-full mb-4 uppercase tracking-wider">
               Authorized Daikin Dealer · TESDA NC III Certified · Since 2016
@@ -224,6 +228,92 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Delivery & Installation Guidelines */}
+      <section className="py-16 px-4 bg-[#f8faff] border-y">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-[#1e3a5f]">Delivery &amp; Installation Guidelines</h2>
+            <p className="text-gray-500 mt-2 text-sm max-w-2xl mx-auto">
+              Delivery and installation schedules are handled separately. Installation is normally scheduled within 2 to 3 working days after product delivery, depending on technician availability and site readiness.
+            </p>
+          </div>
+
+          {/* Info notices */}
+          <div className="space-y-3 mb-8">
+            {[
+              'For installation scheduling, updates, or concerns, please coordinate directly with the GoClean Aircon Supplies and Service Co. Team.',
+              'Any additional charges beyond the selected installation package must be settled directly with the assigned accredited technician.',
+              'For safety, quality assurance, and warranty purposes, installation by authorized GoClean technicians is highly recommended.',
+              'Additional service charges may apply for locations outside the standard service coverage area.',
+            ].map((note, i) => (
+              <div key={i} className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                <Info size={16} className="text-blue-500 shrink-0 mt-0.5" />
+                <p className="text-sm text-blue-800">{note}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Inclusions & Exclusions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Inclusions */}
+            <div className="bg-white border border-green-200 rounded-2xl p-6">
+              <h3 className="font-bold text-[#1e3a5f] text-base mb-4 flex items-center gap-2">
+                <CheckCircle size={18} className="text-green-500" /> Standard Installation Inclusions
+              </h3>
+              <ul className="space-y-2">
+                {[
+                  'Up to 10 feet copper pipe and electrical wiring',
+                  'Copper pipe insulation',
+                  'PVC drain line / drain hose',
+                  'L-type mounting bracket',
+                  'Refrigerant charging',
+                  'Standard installation labor and testing',
+                  'Mounting of indoor and outdoor units under standard installation conditions',
+                  'Unit testing and operational demonstration',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                    <CheckCircle size={14} className="text-green-400 shrink-0 mt-0.5" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Exclusions */}
+            <div className="bg-white border border-red-100 rounded-2xl p-6">
+              <h3 className="font-bold text-[#1e3a5f] text-base mb-4 flex items-center gap-2">
+                <XCircle size={18} className="text-red-400" /> Standard Installation Exclusions
+              </h3>
+              <ul className="space-y-2">
+                {[
+                  'Additional copper pipe and wiring beyond 10 feet',
+                  'Electrical outlet and power supply installation',
+                  'Circuit breaker installation and electrical upgrades',
+                  'Masonry works, glass cutting, carpentry, and civil works',
+                  'Wall or ceiling restoration and repainting',
+                  'Drain tapping point provision',
+                  'Government permits and building clearances',
+                  'Additional brackets, platforms, or special mounting requirements',
+                  'Out-of-town and non-serviceable area charges',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                    <XCircle size={14} className="text-red-300 shrink-0 mt-0.5" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-6 text-center text-sm text-gray-500">
+            For inquiries and assistance, please contact{' '}
+            <span className="font-semibold text-[#1e3a5f]">GoClean Aircon Supplies and Service Co.</span>{' '}
+            at{' '}
+            <a href="tel:+639171178606" className="text-[#2563eb] hover:underline font-medium">0917 117 8606</a>
+          </div>
+        </div>
+      </section>
+
       {/* Brand Showcase */}
       <section className="py-14 px-4 bg-gray-50 border-y">
         <div className="max-w-7xl mx-auto">
@@ -306,8 +396,8 @@ export default function HomePage() {
           <Link href="/book" className="px-6 py-3 bg-[#1e3a5f] text-white font-bold rounded hover:bg-[#152d4a] transition-colors">
             Book a Service
           </Link>
-          <a href="tel:+639178237205" className="px-6 py-3 border-2 border-[#1e3a5f] text-[#1e3a5f] font-bold rounded hover:bg-[#1e3a5f]/10 transition-colors flex items-center gap-2">
-            <Phone size={16} /> 0917 823 7205
+          <a href="tel:+639171178606" className="px-6 py-3 border-2 border-[#1e3a5f] text-[#1e3a5f] font-bold rounded hover:bg-[#1e3a5f]/10 transition-colors flex items-center gap-2">
+            <Phone size={16} /> 0917 117 8606
           </a>
         </div>
       </section>
