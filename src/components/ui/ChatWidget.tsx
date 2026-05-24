@@ -191,16 +191,18 @@ export default function ChatWidget() {
       )}
 
       {/* Floating toggle button */}
-      <button onClick={stage === 'closed' ? openChat : () => setStage('closed')}
-        className="fixed bottom-4 right-4 z-50 w-14 h-14 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center overflow-hidden bg-[#0f1f5c]">
-        {stage !== 'closed'
-          ? <X size={22} className="text-white" />
-          : <img src="/christine.jpg" alt="Chat with Christine" className="w-full h-full object-cover" />
-        }
+      <div className="fixed bottom-4 right-4 z-50">
+        <button onClick={stage === 'closed' ? openChat : () => setStage('closed')}
+          className="relative w-14 h-14 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center overflow-hidden bg-[#0f1f5c]">
+          {stage !== 'closed'
+            ? <X size={22} className="text-white" />
+            : <img src="/christine.jpg" alt="Chat with Christine" className="w-full h-full object-cover" />
+          }
+        </button>
         {stage === 'closed' && unread && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white" />
+          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white pointer-events-none" />
         )}
-      </button>
+      </div>
     </>
   );
 }
