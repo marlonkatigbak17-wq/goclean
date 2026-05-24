@@ -1,5 +1,8 @@
 import { prisma } from '@/lib/prisma';
+import { sendSms } from '@/lib/sms';
 import { NextRequest } from 'next/server';
+
+const ADMIN_PHONE = process.env.ADMIN_NOTIFY_PHONE || '09171178606';
 
 export const dynamic = 'force-dynamic';
 
@@ -280,7 +283,16 @@ export async function POST(request: NextRequest) {
 
         // Build conversation history
         const history = conversations.get(senderId) || [];
+        const isNewConversation = history.length === 0;
         history.push({ role: 'user', content: userText });
+
+        // Notify admin on first message from this sender
+        if (isNewConversation) {
+          sendSms(
+            ADMIN_PHONE,
+            `GoClean MESSENGER ALERT\nNew customer chat on Facebook!\nMessage: "${userText.slice(0, 100)}"\nReply: facebook.com/gocleanaircon`
+          ).catch(() => {});
+        }
 
         // Keep last 10 messages
         if (history.length > 10) history.splice(0, history.length - 10);

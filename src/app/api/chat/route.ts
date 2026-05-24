@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/prisma';
+import { sendSms } from '@/lib/sms';
 
 export const dynamic = 'force-dynamic';
+
+const ADMIN_PHONE = process.env.ADMIN_NOTIFY_PHONE || '09171178606';
 
 interface Message { role: 'user' | 'assistant'; content: string; }
 
@@ -21,6 +24,13 @@ export async function POST(request: Request) {
         },
       });
       resolvedLeadId = lead.id;
+
+      // Notify admin via SMS
+      const firstMsg = (messages as Message[]).find(m => m.role === 'user')?.content || '';
+      sendSms(
+        ADMIN_PHONE,
+        `GoClean CHAT ALERT\nCustomer: ${customerName}\nPhone: ${customerPhone}\nMessage: "${firstMsg.slice(0, 100)}"\nReply: gocleanair.co/admin/leads`
+      ).catch(() => {});
     } catch { /* ignore duplicate */ }
   }
 
