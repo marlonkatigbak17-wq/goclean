@@ -35,7 +35,7 @@ Aircon Cleaning (per unit):
 - Freon Charging: call for quote
 Payment: Cash, GCash, Maya, BPI/BDO/UnionBank, Credit Card Installment, BillEase. No Home Credit.
 Warranty: Cleaning=7 days | Installation=30 days | Compressor repair=6 months | New units=manufacturer warranty
-Promos: 3 units cleaned = 1 free basic cleaning | 10% off for repeat customers | Free checkup with every cleaning
+Promos: 10% off for repeat customers | Free checkup with every cleaning
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 GREETING FLOW
