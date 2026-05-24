@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { sendSms } from '@/lib/sms';
 import { NextRequest } from 'next/server';
 
-const ADMIN_PHONE = process.env.ADMIN_NOTIFY_PHONE || '09171178606';
+const ADMIN_PHONE = process.env.ADMIN_NOTIFY_PHONE || '+15129109060';
 
 export const dynamic = 'force-dynamic';
 

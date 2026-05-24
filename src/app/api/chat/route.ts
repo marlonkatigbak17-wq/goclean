@@ -3,7 +3,7 @@ import { sendSms } from '@/lib/sms';
 
 export const dynamic = 'force-dynamic';
 
-const ADMIN_PHONE = process.env.ADMIN_NOTIFY_PHONE || '09171178606';
+const ADMIN_PHONE = process.env.ADMIN_NOTIFY_PHONE || '+15129109060';
 
 interface Message { role: 'user' | 'assistant'; content: string; }
 
