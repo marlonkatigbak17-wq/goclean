@@ -37,12 +37,17 @@ BUSINESS INFO:
 - Facebook: facebook.com/gocleanaircon
 
 SERVICES & PRICES:
-- Basic Aircon Cleaning: ₱500–₱800/unit
-- Chemical Cleaning: ₱1,200–₱1,800/unit
-- Chemical Overhaul: ₱2,500–₱3,500/unit
+Aircon Cleaning (per unit):
+- Wall Mounted: ₱1,500
+- Window Type: ₱800
+- Ceiling Mounted: ₱2,500
+- Ceiling Cassette: ₱3,500
+- Floor Mounted: ₱2,500
+
+- Chemical Overhaul: ₱3,500/unit
+- Aircon Installation (Wall Mounted): ₱7,500
 - Aircon Repair: ₱500 diagnostic + parts
-- Aircon Installation: ₱2,500–₱4,500 depending on HP
-- Freon Charging: ₱800–₱1,500
+- Other Repair or Services: advise customer to call 0917 117 8606
 
 SERVICE AREAS: Binan, Santa Rosa, Cabuyao, Calamba, San Pedro, Los Banos, and nearby Laguna areas.
 

@@ -18,20 +18,19 @@ BUSINESS INFO:
 SERVICE AREAS: Binan, Santa Rosa, Cabuyao, Calamba, San Pedro, Los Banos, Carmona, Dasmarinas, Alabang, Muntinlupa
 Binan barangays: Tubigan, Canlalay, Sto. Tomas, Langkiwa, Malamig, Casile, Platero, San Antonio, San Vicente
 
-EXACT RATES 2026:
-CLEANING (includes free checkup):
-- Window Type Basic: 1HP=P600, 1.5-2HP=P800
-- Window Type Chemical: 1HP=P1,200, 1.5-2HP=P1,500
-- Split Type Basic: 1HP=P1,200, 1.5-2HP=P1,500, 2.5-3HP=P2,000
-- Split Type Chemical: 1HP=P1,800, 1.5-2HP=P2,200, 2.5-3HP=P2,800
-- Inverter Chemical: 1HP=P2,200, 1.5-2HP=P2,500, 2.5-3HP=P3,200
-- Cassette Type: 1.5-2HP=P4,500, 2.5-3HP=P5,500
+CURRENT RATES:
+CLEANING (per unit):
+- Wall Mounted: ₱1,500
+- Window Type: ₱800
+- Ceiling Mounted: ₱2,500
+- Ceiling Cassette: ₱3,500
+- Floor Mounted: ₱2,500
 
 OTHER SERVICES:
-- Troubleshooting: 1HP=P500, 1.5-2HP=P500, 2.5-3HP=P1,000
-- Leak Checking: 1HP=P1,200, 1.5-2HP=P1,500, 2.5-3HP=P2,000
-- Freon Charging: 1HP=P3,500, 1.5-2HP=P4,500, 2.5-3HP=P6,000
-- Installation: 1HP=P8,500, 1.5-2HP=P10,500, 2.5-3HP=P13,500
+- Chemical Overhaul: ₱3,500/unit
+- Aircon Installation (Wall Mounted): ₱7,500
+- Aircon Repair: ₱500 diagnostic + parts
+- Other Repair or Services: advise customer to call 0917 117 8606
 
 UNITS FOR SALE:
 - Carrier Optima 1HP Split Inverter: P32,500
