@@ -188,6 +188,24 @@ export default function AdminProductsPage() {
     await fetchProducts();
   }
 
+  function exportCSV() {
+    const headers = ['id','slug','name','brand','category','subcategory','price','priceWithInstallation','image_url','horsepower','coolingCapacity','energyEfficiency','warranty','inStock','badge','description'];
+    const rows = products.map(p => [
+      p.id, p.slug, p.name, p.brand, p.category, p.subcategory,
+      p.price, p.priceWithInstallation ?? '',
+      p.images?.[0] ?? '',
+      p.specs?.horsepower ?? '', p.specs?.coolingCapacity ?? '',
+      p.specs?.energyEfficiency ?? '', p.specs?.warranty ?? '',
+      p.inStock ? 'true' : 'false',
+      p.badge ?? '', `"${(p.description ?? '').replace(/"/g, '""')}"`,
+    ]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'goclean-products.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -224,6 +242,12 @@ export default function AdminProductsPage() {
           <p className="text-sm text-gray-400 mt-0.5">{products.length} products in database</p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={exportCSV}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <Download size={15} /> Export CSV
+          </button>
           <a
             href="/api/admin/product-template"
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors"
