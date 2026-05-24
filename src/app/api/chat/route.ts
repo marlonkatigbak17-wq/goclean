@@ -1,9 +1,7 @@
 import { prisma } from '@/lib/prisma';
-import { sendSms } from '@/lib/sms';
+import { notifyTelegram } from '@/lib/telegram';
 
 export const dynamic = 'force-dynamic';
-
-const ADMIN_PHONE = process.env.ADMIN_NOTIFY_PHONE || '+15129109060';
 
 interface Message { role: 'user' | 'assistant'; content: string; }
 
@@ -25,12 +23,11 @@ export async function POST(request: Request) {
       });
       resolvedLeadId = lead.id;
 
-      // Notify admin via SMS
+      // Notify admin via Telegram
       const firstMsg = (messages as Message[]).find(m => m.role === 'user')?.content || '';
-      sendSms(
-        ADMIN_PHONE,
-        `GoClean CHAT ALERT\nCustomer: ${customerName}\nPhone: ${customerPhone}\nMessage: "${firstMsg.slice(0, 100)}"\nReply: gocleanair.co/admin/leads`
-      ).catch(() => {});
+      notifyTelegram(
+        `🔔 GoClean WEBSITE CHAT\n\n👤 ${customerName}\n📞 ${customerPhone}\n💬 "${firstMsg.slice(0, 120)}"\n\n🔗 gocleanair.co/admin/leads`
+      );
     } catch { /* ignore duplicate */ }
   }
 

@@ -1,8 +1,6 @@
 import { prisma } from '@/lib/prisma';
-import { sendSms } from '@/lib/sms';
+import { notifyTelegram } from '@/lib/telegram';
 import { NextRequest } from 'next/server';
-
-const ADMIN_PHONE = process.env.ADMIN_NOTIFY_PHONE || '+15129109060';
 
 export const dynamic = 'force-dynamic';
 
@@ -288,10 +286,9 @@ export async function POST(request: NextRequest) {
 
         // Notify admin on first message from this sender
         if (isNewConversation) {
-          sendSms(
-            ADMIN_PHONE,
-            `GoClean MESSENGER ALERT\nNew customer chat on Facebook!\nMessage: "${userText.slice(0, 100)}"\nReply: facebook.com/gocleanaircon`
-          ).catch(() => {});
+          notifyTelegram(
+            `🔔 GoClean FACEBOOK MESSENGER\n\n💬 "${userText.slice(0, 120)}"\n\n🔗 facebook.com/gocleanaircon`
+          );
         }
 
         // Keep last 10 messages
