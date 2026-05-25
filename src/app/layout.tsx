@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
@@ -8,6 +8,13 @@ import Toast from '@/components/ui/Toast';
 import ChatWidget from '@/components/ui/ChatWidget';
 import FloatingChat from '@/components/ui/FloatingChat';
 import TawkTo from '@/components/ui/TawkTo';
+
+export const viewport: Viewport = {
+  themeColor: '#1a5ff0',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
 
 const inter = Inter({ subsets: ['latin'] });
 
