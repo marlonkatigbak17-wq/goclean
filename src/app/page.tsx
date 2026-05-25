@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Wrench, ShoppingBag, Star, CheckCircle, ArrowRight, Phone, ShoppingCart, PackageCheck, Truck, Zap, XCircle, Info } from 'lucide-react';
+import { Wrench, ShoppingBag, Star, CheckCircle, ArrowRight, Phone, ShoppingCart, PackageCheck, Truck, Zap, XCircle, Info, Download, Smartphone } from 'lucide-react';
 import { products } from '@/lib/products';
 import { formatPrice } from '@/lib/utils';
 import ProductImage from '@/components/shop/ProductImage';
@@ -87,6 +87,9 @@ export default function HomePage() {
               <Link href="/book" className="px-6 py-3 border border-blue-300 text-blue-100 rounded hover:bg-white/10 transition-colors flex items-center gap-2">
                 <Wrench size={18} /> Book a Service
               </Link>
+              <a href="/goclean.apk" download className="px-6 py-3 bg-green-500 text-white font-bold rounded hover:bg-green-400 transition-colors flex items-center gap-2">
+                <Smartphone size={18} /> Download App
+              </a>
             </div>
           </div>
 
@@ -110,6 +113,28 @@ export default function HomePage() {
               {b}
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* App Download Banner */}
+      <section className="bg-[#1a5ff0] py-8 px-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4 text-white">
+            <div className="bg-white/20 rounded-2xl p-3">
+              <Smartphone size={32} className="text-white" />
+            </div>
+            <div>
+              <p className="font-bold text-lg">GoClean App — Now Available!</p>
+              <p className="text-blue-200 text-sm">Book services, shop units, and track orders from your phone.</p>
+            </div>
+          </div>
+          <a
+            href="/goclean.apk"
+            download
+            className="flex items-center gap-2 bg-white text-[#1a5ff0] font-bold px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors whitespace-nowrap"
+          >
+            <Download size={18} /> Download APK (Android)
+          </a>
         </div>
       </section>
 
