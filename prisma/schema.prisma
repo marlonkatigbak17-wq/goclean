@@ -201,3 +201,30 @@ model SocialPost {
   fbPostId    String?
   createdAt   DateTime  @default(now())
 }
+
+model MessengerConversation {
+  id          String   @id @default(cuid())
+  senderId    String   @unique
+  lastMessage String   @default("")
+  paused      Boolean  @default(false)
+  pausedAt    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TechProLicense {
+  id            String    @id @default(cuid())
+  key           String    @unique
+  plan          String    @default("monthly")   // monthly | yearly
+  amount        Float
+  phone         String
+  email         String?
+  name          String?
+  paymentId     String?   @unique               // PayMongo payment ID
+  activatedAt   DateTime?
+  expiresAt     DateTime?
+  isActive      Boolean   @default(false)
+  deviceId      String?                          // locked to one device after first use
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
