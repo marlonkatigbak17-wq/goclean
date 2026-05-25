@@ -1,10 +1,11 @@
 'use client';
 
 import { QRCodeSVG } from 'qrcode.react';
-import { Smartphone, Apple, Download, CheckCircle } from 'lucide-react';
+import { Smartphone, Apple, Download, CheckCircle, Wrench } from 'lucide-react';
 
 const ANDROID_URL = 'https://gocleanair.co/goclean.apk';
 const IOS_URL = 'https://gocleanair.co';
+const TECHPRO_ANDROID_URL = 'https://gocleanair.co/techpro.apk';
 
 export default function DownloadPage() {
   return (
@@ -127,6 +128,64 @@ export default function DownloadPage() {
                   {step}
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* TechPro Section */}
+        <div className="mt-14">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
+              <Wrench size={16} /> For Aircon Technicians
+            </div>
+            <h2 className="text-3xl font-extrabold text-[#1e3a5f] mb-3">TechPro Aircon</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
+              Professional toolkit for aircon technicians. Error code lookup, BTU calculator, refrigerant guide, and more.
+            </p>
+          </div>
+
+          <div className="bg-[#1a1a2e] rounded-2xl shadow-md p-8 flex flex-col md:flex-row items-center gap-8">
+            <div className="flex flex-col items-center text-center md:items-start md:text-left flex-1">
+              <div className="bg-blue-500/20 rounded-full p-4 mb-4">
+                <Wrench size={36} className="text-blue-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">Android APK</h3>
+              <p className="text-gray-400 text-sm mb-6">Scan the QR or tap to download. Works offline — perfect for job sites.</p>
+              <ul className="space-y-2 mb-6">
+                {['Error codes for Daikin, LG, Carrier, Midea, AUX', 'BTU Calculator', 'Refrigerant Guide', 'Service Checklist'].map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
+                    <CheckCircle size={15} className="text-blue-400 shrink-0" /> {f}
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-col sm:flex-row gap-3 w-full">
+                <a
+                  href="/techpro.apk"
+                  download
+                  className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl transition-colors"
+                >
+                  <Download size={18} /> Download APK
+                </a>
+                <a
+                  href="/techpro"
+                  className="flex items-center justify-center gap-2 border border-white/20 text-white font-semibold py-3 px-6 rounded-xl hover:bg-white/10 transition-colors text-sm"
+                >
+                  Get Premium License
+                </a>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <div className="bg-white p-4 rounded-xl shadow-sm mb-3">
+                <QRCodeSVG
+                  value={TECHPRO_ANDROID_URL}
+                  size={180}
+                  bgColor="#ffffff"
+                  fgColor="#1a1a2e"
+                  level="M"
+                />
+              </div>
+              <p className="text-xs text-gray-500">Scan to download TechPro APK</p>
             </div>
           </div>
         </div>
