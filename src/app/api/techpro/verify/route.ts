@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPrisma } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,8 +9,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: false, error: 'License key is required' }, { status: 400 });
     }
 
-    const prisma = getPrisma();
-    const license = await prisma.techProLicense.findUnique({ where: { key: key.trim().toUpperCase() } });
+      const license = await prisma.techProLicense.findUnique({ where: { key: key.trim().toUpperCase() } });
 
     if (!license) {
       return NextResponse.json({ valid: false, error: 'Invalid license key' });

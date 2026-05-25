@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPrisma } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { sendSms } from '@/lib/sms';
 import crypto from 'crypto';
 
@@ -46,8 +46,6 @@ export async function POST(req: NextRequest) {
     if (!meta?.phone || !paymentId) {
       return NextResponse.json({ error: 'Missing metadata' }, { status: 400 });
     }
-
-    const prisma = getPrisma();
 
     // Idempotency — skip if already processed
     const existing = await prisma.techProLicense.findUnique({ where: { paymentId } });
