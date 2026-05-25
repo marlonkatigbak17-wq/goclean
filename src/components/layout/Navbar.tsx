@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { useState } from 'react';
@@ -16,6 +16,7 @@ const navLinks = [
   { label: 'Reviews', href: '/reviews' },
   { label: 'Careers', href: '/careers' },
   { label: 'Contact', href: '/contact' },
+  { label: '📲 Download App', href: '/download' },
 ];
 
 function GocleanLogo() {
@@ -51,9 +52,9 @@ export default function Navbar() {
       <div className="bg-[#0a1440] text-xs text-blue-200 py-1">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
           <span>Goclean Aircon Supplies and Service Co.</span>
-          <a href="tel:+639178237205" className="flex items-center gap-1 hover:text-white transition-colors">
+          <a href="tel:+639171178606" className="flex items-center gap-1 hover:text-white transition-colors">
             <Phone size={12} />
-            0917 823 7205 / 0922 912 1250
+            0917 117 8605 / 049 536 7220
           </a>
         </div>
       </div>
