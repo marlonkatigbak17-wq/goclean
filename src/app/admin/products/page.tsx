@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Plus, Pencil, Trash2, Upload, X, Check, PackageX, Package, FileSpreadsheet, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, X, Check, PackageX, Package, FileSpreadsheet, Download, Search, ArrowUpDown, Eye, EyeOff } from 'lucide-react';
 
 type ProductSpecs = {
   horsepower?: string;
@@ -23,6 +23,7 @@ type Product = {
   images: string[];
   specs: ProductSpecs;
   inStock: boolean;
+  published: boolean;
   badge?: string;
   description: string;
 };
@@ -38,13 +39,14 @@ const emptyProduct = (): Omit<Product, 'id'> => ({
   images: [],
   specs: { horsepower: '', coolingCapacity: '', energyEfficiency: '', warranty: '' },
   inStock: true,
+  published: true,
   badge: '',
   description: '',
 });
 
-const brands = ['Daikin', 'Carrier', 'Midea', 'Panasonic', 'LG', 'AUX', 'Generic', 'Other'];
+const brands = ['Daikin', 'Carrier', 'Midea', 'Panasonic', 'LG', 'AUX', 'OX Aircon', 'Generic', 'Other'];
 const categories = ['residential', 'commercial', 'hvac-supplies', 'tools', 'services'];
-const subcategories = ['Split Type', 'Window Type', 'Cassette', 'Copper Tube', 'Vacuum Pump', 'Other'];
+const subcategories = ['Split Type', 'Wall Mounted', 'Window Type', 'Floor Standing', 'Ceiling Cassette', 'Ceiling Suspended', 'Ceiling Concealed', 'Copper Tube', 'Vacuum Pump', 'Other'];
 const badges = ['', 'Best Seller', 'New', 'Sale'];
 
 export default function AdminProductsPage() {
@@ -58,6 +60,10 @@ export default function AdminProductsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [toast, setToast] = useState('');
   const [importing, setImporting] = useState(false);
+  const [search, setSearch] = useState('');
+  const [sortAZ, setSortAZ] = useState(true);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkUpdating, setBulkUpdating] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
 
@@ -68,7 +74,7 @@ export default function AdminProductsPage() {
   async function fetchProducts() {
     setLoading(true);
     try {
-      const res = await fetch('/api/products');
+      const res = await fetch('/api/products?all=true');
       const data = await res.json();
       setProducts(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -116,10 +122,10 @@ export default function AdminProductsPage() {
     fd.append('file', imageFile);
     fd.append('slug', slug);
     const res = await fetch('/api/upload', { method: 'POST', body: fd });
-    if (!res.ok) return null;
     const data = await res.json();
-    if (data.pending) {
-      showToast('Photo saved — will appear on site in ~2 minutes after deploy');
+    if (!res.ok || data.error) {
+      showToast(`Upload failed: ${data.error || res.statusText}`);
+      return null;
     }
     return data.url;
   }
@@ -159,6 +165,8 @@ export default function AdminProductsPage() {
         await fetchProducts();
         closePanel();
         showToast(isNew ? 'Product added!' : 'Product updated!');
+      } else if (res.status === 401) {
+        window.location.href = '/admin/login';
       } else {
         const err = await res.json().catch(() => ({}));
         showToast(`Error: ${err.error || res.statusText}`);
@@ -173,9 +181,13 @@ export default function AdminProductsPage() {
   async function handleDelete(id: string) {
     const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
     if (res.ok) {
-      await fetchProducts();
+      setProducts(prev => prev.filter(p => p.id !== id));
       setDeleteConfirm(null);
       showToast('Product deleted');
+    } else if (res.status === 401) {
+      window.location.href = '/admin/login';
+    } else {
+      showToast('Delete failed — please try again');
     }
   }
 
@@ -188,22 +200,81 @@ export default function AdminProductsPage() {
     await fetchProducts();
   }
 
-  function exportCSV() {
-    const headers = ['id','slug','name','brand','category','subcategory','price','priceWithInstallation','image_url','horsepower','coolingCapacity','energyEfficiency','warranty','inStock','badge','description'];
-    const rows = products.map(p => [
-      p.id, p.slug, p.name, p.brand, p.category, p.subcategory,
-      p.price, p.priceWithInstallation ?? '',
-      p.images?.[0] ?? '',
-      p.specs?.horsepower ?? '', p.specs?.coolingCapacity ?? '',
-      p.specs?.energyEfficiency ?? '', p.specs?.warranty ?? '',
-      p.inStock ? 'true' : 'false',
-      p.badge ?? '', `"${(p.description ?? '').replace(/"/g, '""')}"`,
-    ]);
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'goclean-products.csv'; a.click();
-    URL.revokeObjectURL(url);
+  function toggleSelect(id: string) {
+    setSelected(prev => { const n = new Set(prev); if (n.has(id)) { n.delete(id); } else { n.add(id); } return n; });
+  }
+
+  function toggleSelectAll() {
+    setSelected(prev => prev.size === filteredProducts.length ? new Set() : new Set(filteredProducts.map(p => p.id)));
+  }
+
+  async function handleBulkUpdate(field: 'inStock' | 'published', value: boolean) {
+    if (!selected.size) return;
+    setBulkUpdating(true);
+    await Promise.all([...selected].map(id =>
+      fetch(`/api/products/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value }),
+      })
+    ));
+    await fetchProducts();
+    setSelected(new Set());
+    setBulkUpdating(false);
+    showToast(`Updated ${selected.size} product${selected.size > 1 ? 's' : ''}`);
+  }
+
+  async function exportExcel() {
+    const XLSX = await import('xlsx');
+    const rows = products.map(p => ({
+      ID:                   p.id,
+      Slug:                 p.slug,
+      Name:                 p.name,
+      Brand:                p.brand,
+      Category:             p.category,
+      Subcategory:          p.subcategory,
+      Price:                p.price,
+      'Price w/ Install':   p.priceWithInstallation ?? '',
+      'Image URL':          p.images?.[0] ?? '',
+      Horsepower:           p.specs?.horsepower ?? '',
+      'Cooling Capacity':   p.specs?.coolingCapacity ?? '',
+      'Energy Efficiency':  p.specs?.energyEfficiency ?? '',
+      Warranty:             p.specs?.warranty ?? '',
+      'In Stock':           p.inStock ? 'Yes' : 'No',
+      Published:            (p as Product & { published?: boolean }).published !== false ? 'Yes' : 'No',
+      Badge:                p.badge ?? '',
+      Description:          p.description,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Column widths
+    ws['!cols'] = [
+      { wch: 28 }, // ID
+      { wch: 30 }, // Slug
+      { wch: 35 }, // Name
+      { wch: 12 }, // Brand
+      { wch: 14 }, // Category
+      { wch: 18 }, // Subcategory
+      { wch: 12 }, // Price
+      { wch: 16 }, // Price w/ Install
+      { wch: 40 }, // Image URL
+      { wch: 12 }, // HP
+      { wch: 16 }, // Cooling
+      { wch: 22 }, // Energy
+      { wch: 14 }, // Warranty
+      { wch: 10 }, // In Stock
+      { wch: 10 }, // Published
+      { wch: 12 }, // Badge
+      { wch: 50 }, // Description
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Products');
+
+    const date = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `goclean-products-${date}.xlsx`);
+    showToast(`Exported ${products.length} products to Excel`);
   }
 
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
@@ -234,19 +305,28 @@ export default function AdminProductsPage() {
     setEditProduct({ ...editProduct, specs: { ...editProduct.specs, [key]: value } });
   }
 
+  const filteredProducts = products
+    .filter(p =>
+      `${p.name} ${p.brand} ${p.subcategory}`.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => sortAZ
+      ? a.name.localeCompare(b.name)
+      : b.name.localeCompare(a.name)
+    );
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold text-[#1e3a5f]">Products</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{products.length} products in database</p>
+          <p className="text-sm text-gray-400 mt-0.5">{filteredProducts.length} of {products.length} products</p>
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={exportCSV}
+            onClick={exportExcel}
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <Download size={15} /> Export CSV
+            <Download size={15} /> Export Excel
           </button>
           <a
             href="/api/admin/product-template"
@@ -271,6 +351,59 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
+      {/* Search + Sort */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by name, brand, type..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#1e3a5f]"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <X size={13} />
+            </button>
+          )}
+        </div>
+        <button
+          onClick={() => setSortAZ(v => !v)}
+          className="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 font-medium"
+        >
+          <ArrowUpDown size={14} />
+          Name {sortAZ ? 'A→Z' : 'Z→A'}
+        </button>
+      </div>
+
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="flex items-center gap-2 bg-[#1e3a5f] text-white px-4 py-2.5 rounded-xl mb-3 flex-wrap">
+          <span className="text-sm font-semibold mr-1">{selected.size} selected</span>
+          <button onClick={() => handleBulkUpdate('inStock', true)} disabled={bulkUpdating}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-lg disabled:opacity-50">
+            <Package size={13} /> In Stock
+          </button>
+          <button onClick={() => handleBulkUpdate('inStock', false)} disabled={bulkUpdating}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg disabled:opacity-50">
+            <PackageX size={13} /> Out of Stock
+          </button>
+          <button onClick={() => handleBulkUpdate('published', true)} disabled={bulkUpdating}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-400 hover:bg-blue-500 text-white text-xs font-bold rounded-lg disabled:opacity-50">
+            <Eye size={13} /> Publish
+          </button>
+          <button onClick={() => handleBulkUpdate('published', false)} disabled={bulkUpdating}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white text-xs font-bold rounded-lg disabled:opacity-50">
+            <EyeOff size={13} /> Unpublish
+          </button>
+          <button onClick={() => setSelected(new Set())}
+            className="ml-auto flex items-center gap-1 px-2.5 py-1.5 bg-white/20 hover:bg-white/30 text-white text-xs rounded-lg">
+            <X size={12} /> Clear
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="text-center py-20 text-gray-400">Loading...</div>
       ) : (
@@ -278,18 +411,31 @@ export default function AdminProductsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
+                <th className="px-4 py-3 w-10">
+                  <input type="checkbox"
+                    checked={filteredProducts.length > 0 && selected.size === filteredProducts.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded accent-[#1e3a5f] cursor-pointer" />
+                </th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-16">Photo</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Product</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Brand</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Price</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Specs</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Stock</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
                 <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {products.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+              {filteredProducts.length === 0 && (
+                <tr><td colSpan={8} className="text-center py-12 text-gray-400">No products found</td></tr>
+              )}
+              {filteredProducts.map((p) => (
+                <tr key={p.id} className={`hover:bg-gray-50 transition-colors ${selected.has(p.id) ? 'bg-blue-50' : ''}`}>
+                  <td className="px-4 py-3">
+                    <input type="checkbox" checked={selected.has(p.id)} onChange={() => toggleSelect(p.id)}
+                      className="w-4 h-4 rounded accent-[#1e3a5f] cursor-pointer" />
+                  </td>
                   <td className="px-4 py-3">
                     <div className="w-12 h-12 relative rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                       <span className="text-xl absolute">❄️</span>
@@ -329,16 +475,19 @@ export default function AdminProductsPage() {
                     {p.specs.energyEfficiency && <div className="truncate max-w-[120px]">{p.specs.energyEfficiency}</div>}
                   </td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => toggleStock(p)}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${
-                        p.inStock
-                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                          : 'bg-red-100 text-red-600 hover:bg-red-200'
-                      }`}
-                    >
-                      {p.inStock ? <><Package size={11} /> In Stock</> : <><PackageX size={11} /> Out</>}
-                    </button>
+                    <div className="flex flex-col gap-1.5">
+                      <button onClick={() => toggleStock(p)}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-colors w-fit ${
+                          p.inStock ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-600 hover:bg-red-200'
+                        }`}>
+                        {p.inStock ? <><Package size={11} /> In Stock</> : <><PackageX size={11} /> Out of Stock</>}
+                      </button>
+                      <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold w-fit ${
+                        p.published ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {p.published ? <><Eye size={10} /> Published</> : <><EyeOff size={10} /> Draft</>}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
@@ -582,22 +731,40 @@ export default function AdminProductsPage() {
                 />
               </div>
 
-              {/* Stock toggle */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setEditProduct({ ...editProduct, inStock: !editProduct.inStock })}
-                  className={`relative inline-flex w-11 h-6 rounded-full transition-colors ${
-                    editProduct.inStock ? 'bg-green-500' : 'bg-gray-300'
-                  }`}
-                >
-                  <span className={`inline-block w-5 h-5 bg-white rounded-full shadow transform transition-transform mt-0.5 ${
-                    editProduct.inStock ? 'translate-x-5' : 'translate-x-0.5'
-                  }`} />
-                </button>
-                <span className="text-sm font-medium text-gray-700">
-                  {editProduct.inStock ? 'In Stock' : 'Out of Stock'}
-                </span>
+              {/* Stock + Published toggles */}
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditProduct({ ...editProduct, inStock: !editProduct.inStock })}
+                    className={`relative inline-flex w-11 h-6 rounded-full transition-colors ${
+                      editProduct.inStock ? 'bg-green-500' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span className={`inline-block w-5 h-5 bg-white rounded-full shadow transform transition-transform mt-0.5 ${
+                      editProduct.inStock ? 'translate-x-5' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                  <span className="text-sm font-medium text-gray-700">
+                    {editProduct.inStock ? 'In Stock' : 'Out of Stock'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditProduct({ ...editProduct, published: !editProduct.published })}
+                    className={`relative inline-flex w-11 h-6 rounded-full transition-colors ${
+                      editProduct.published ? 'bg-blue-500' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span className={`inline-block w-5 h-5 bg-white rounded-full shadow transform transition-transform mt-0.5 ${
+                      editProduct.published ? 'translate-x-5' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                  <span className="text-sm font-medium text-gray-700">
+                    {editProduct.published ? 'Published' : 'Draft'}
+                  </span>
+                </div>
               </div>
             </div>
 

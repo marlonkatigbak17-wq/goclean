@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Package, ShoppingBag, CalendarCheck,
   Boxes, LogOut, Users, Tag, Calendar, UserSquare2, Wrench,
-  FileText, Menu, X, ChevronDown, ContactRound, MessageSquare, MapPin, Settings, Briefcase, Share2, Key,
+  FileText, Menu, X, ChevronDown, ContactRound, MessageSquare, MapPin, Settings, Briefcase, Share2, Key, Megaphone, Phone,
 } from 'lucide-react';
 
 const mainNav = [
@@ -31,6 +31,8 @@ const extraNav = [
   { label: 'TechPro',       href: '/admin/techpro',       icon: Key,           key: 'techpro' },
   { label: 'Careers',       href: '/admin/careers',       icon: Briefcase,     key: 'careers' },
   { label: 'Social Media',  href: '/admin/social',        icon: Share2,        key: 'social' },
+  { label: 'Facebook Ads', href: '/admin/ads',            icon: Megaphone,     key: 'ads' },
+  { label: 'Viber Dialer', href: '/admin/dialer',         icon: Phone,         key: 'dialer' },
   { label: 'SMS Blast',     href: '/admin/sms-blast',     icon: MessageSquare, key: 'sms-blast' },
   { label: 'Conversations', href: '/admin/conversations', icon: MessageSquare, key: 'conversations' },
   { label: 'Promo Codes',   href: '/admin/coupons',       icon: Tag,           key: 'coupons' },

@@ -3,9 +3,14 @@ import { requireAdmin } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const products = await prisma.product.findMany({ orderBy: { createdAt: 'asc' } });
+    const { searchParams } = new URL(request.url);
+    const all = searchParams.get('all') === 'true';
+    const products = await prisma.product.findMany({
+      where: all ? undefined : { published: true },
+      orderBy: { createdAt: 'asc' },
+    });
     return Response.json(products);
   } catch (e) {
     console.error('GET /api/products error:', e);
@@ -32,6 +37,7 @@ export async function POST(request: Request) {
         images: body.images || [],
         specs: body.specs || {},
         inStock: body.inStock !== false,
+        published: body.published !== false,
         badge: body.badge || null,
         description: body.description || '',
       },
