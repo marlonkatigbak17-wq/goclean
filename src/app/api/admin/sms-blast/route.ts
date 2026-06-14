@@ -84,25 +84,20 @@ export async function POST(request: Request) {
   const enc = new TextEncoder();
   const push = (obj: object) => enc.encode(JSON.stringify(obj) + '\n');
 
-  const hasSenderName = !!process.env.SEMAPHORE_SENDER_NAME;
-
   const stream = new ReadableStream({
     async start(controller) {
-      let sent           = 0;
-      let failed         = 0;
-      let skipSenderName = false;
-      const total        = rawNumbers.length;
+      let sent   = 0;
+      let failed = 0;
+      const total = rawNumbers.length;
 
       for (let i = 0; i < total; i++) {
         const number = rawNumbers[i];
-        const result = await sendSms(number, message.trim(), { skipSenderName });
+        const result = await sendSms(number, message.trim(), { skipSenderName: true });
 
         if (result.ok) {
           sent++;
         } else {
           failed++;
-          // Once we know the sender name is rejected, skip it for the rest
-          if (!skipSenderName && hasSenderName) skipSenderName = true;
         }
 
         controller.enqueue(push({
