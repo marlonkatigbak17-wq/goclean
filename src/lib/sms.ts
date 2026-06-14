@@ -15,12 +15,13 @@ async function callSemaphore(
   number: string,   // one number or comma-separated list
   message: string,
 ): Promise<{ ok: boolean; status: number; error?: string }> {
-  const payload = { apikey: apiKey, number, message };
+  // Semaphore docs show form-encoded (curl --data), not JSON
+  const payload = new URLSearchParams({ apikey: apiKey, number, message });
   try {
     const res  = await fetch('https://api.semaphore.co/api/v4/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: payload.toString(),
     });
     const body = await res.json().catch(() => null) as Record<string, unknown> | null;
     if (res.ok) return { ok: true, status: res.status };

@@ -21,22 +21,17 @@ export async function GET() {
     balance = { error: String(e) };
   }
 
-  // 2. Single test send — raw response for debugging
-  const testNumber = '09171178605';
-  const payload: Record<string, string> = {
-    apikey: apiKey,
-    number: testNumber.replace(/\D/g, '').replace(/^0/, '63'),
-    message: 'GoClean SMS test — if you receive this, SMS is working!',
-  };
-  if (senderName) payload.sendername = senderName;
+  // 2. Single test send using form-encoded (same as Semaphore docs)
+  const testNumber = normalizePhone('09171178605')!;
+  const formBody   = new URLSearchParams({ apikey: apiKey, number: testNumber, message: 'GoClean SMS test — if you receive this, SMS is working!' });
 
   let testRawStatus = 0;
   let testRawBody: unknown = null;
   try {
     const r = await fetch('https://api.semaphore.co/api/v4/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formBody.toString(),
     });
     testRawStatus = r.status;
     testRawBody   = await r.json().catch(() => null);
@@ -44,7 +39,7 @@ export async function GET() {
     testRawBody = { fetchError: String(e) };
   }
 
-  // 3. Sample phone numbers from DB — show raw + what normalizePhone does with them
+  // 3. Sample phone numbers from DB
   const sampleUsers = await prisma.user.findMany({
     where: { phone: { not: '' } },
     select: { phone: true },
@@ -55,7 +50,7 @@ export async function GET() {
     normalized: normalizePhone(u.phone),
     valid: normalizePhone(u.phone) !== null,
   }));
-  const allUsers  = await prisma.user.count({ where: { phone: { not: '' } } });
+  const allUsers   = await prisma.user.count({ where: { phone: { not: '' } } });
   const validCount = (await prisma.user.findMany({ where: { phone: { not: '' } }, select: { phone: true } }))
     .filter(u => normalizePhone(u.phone) !== null).length;
 
@@ -63,8 +58,8 @@ export async function GET() {
     config: {
       apiKeyPresent: true,
       apiKeyPreview: `${apiKey.slice(0, 6)}...`,
-      senderName: senderName ?? '(not set)',
-      payloadSent: payload,
+      senderName: senderName ?? '(not set — good)',
+      encoding: 'application/x-www-form-urlencoded',
     },
     balance,
     testSend: {
