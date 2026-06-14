@@ -1,26 +1,21 @@
 export function normalizePhone(raw: string): string | null {
-  // Strip everything except digits
   const d = raw.replace(/\D/g, '');
 
-  // Step down to bare 10-digit local number (9XXXXXXXXX)
   let bare = d;
-  if (bare.startsWith('0639') && bare.length === 13) bare = bare.slice(1); // 0639... → 639...
-  if (bare.startsWith('63')   && bare.length === 12) bare = bare.slice(2); // 639... → 9...
-  if (bare.startsWith('0')    && bare.length === 11) bare = bare.slice(1); // 09... → 9...
+  if (bare.startsWith('0639') && bare.length === 13) bare = bare.slice(1);
+  if (bare.startsWith('63')   && bare.length === 12) bare = bare.slice(2);
+  if (bare.startsWith('0')    && bare.length === 11) bare = bare.slice(1);
 
-  // Valid PH mobile: starts with 9, exactly 10 digits
   if (bare.startsWith('9') && bare.length === 10) return '63' + bare;
   return null;
 }
 
 async function callSemaphore(
   apiKey: string,
-  number: string,
+  number: string,   // one number or comma-separated list
   message: string,
-  senderName?: string,
 ): Promise<{ ok: boolean; status: number; error?: string }> {
-  const payload: Record<string, string> = { apikey: apiKey, number, message };
-  if (senderName) payload.sendername = senderName;
+  const payload = { apikey: apiKey, number, message };
   try {
     const res  = await fetch('https://api.semaphore.co/api/v4/messages', {
       method: 'POST',
@@ -36,12 +31,9 @@ async function callSemaphore(
   }
 }
 
-// skipSenderName: set true after the first send confirms sender name is rejected,
-// so we avoid wasting a request on every subsequent recipient.
 export async function sendSms(
   to: string,
   message: string,
-  opts: { skipSenderName?: boolean } = {},
 ): Promise<{ ok: boolean; error?: string }> {
   const apiKey = process.env.SEMAPHORE_API_KEY;
   if (!apiKey || !to) return { ok: false, error: 'Missing API key or recipient' };
@@ -49,23 +41,27 @@ export async function sendSms(
   const number = normalizePhone(to);
   if (!number) return { ok: false, error: `Invalid phone number: ${to}` };
 
-  const senderName = opts.skipSenderName ? undefined : (process.env.SEMAPHORE_SENDER_NAME || undefined);
-
-  const result = await callSemaphore(apiKey, number, message, senderName);
-  if (result.ok) return { ok: true };
-
-  // If senderName was used and failed, retry once without it
-  if (senderName) {
-    console.warn('SMS failed with sendername, retrying without:', result.error);
-    const retry = await callSemaphore(apiKey, number, message);
-    if (retry.ok) return { ok: true };
-    return { ok: false, error: retry.error };
-  }
-
-  return { ok: false, error: result.error };
+  const result = await callSemaphore(apiKey, number, message);
+  return result.ok ? { ok: true } : { ok: false, error: result.error };
 }
 
-// Used by cron/reminder routes — not the blast route
+// Send to up to 1,000 numbers in a single Semaphore API call (their recommended bulk method).
+// Returns how many were accepted and the first error if any.
+export async function sendSmsBatch(
+  numbers: string[],   // already normalized (639XXXXXXXXX)
+  message: string,
+): Promise<{ ok: boolean; count: number; error?: string }> {
+  const apiKey = process.env.SEMAPHORE_API_KEY;
+  if (!apiKey) return { ok: false, count: 0, error: 'SEMAPHORE_API_KEY not set' };
+  if (!numbers.length) return { ok: false, count: 0, error: 'No numbers' };
+
+  const result = await callSemaphore(apiKey, numbers.join(','), message);
+  return result.ok
+    ? { ok: true, count: numbers.length }
+    : { ok: false, count: 0, error: result.error };
+}
+
+// Used by cron/reminder routes
 export async function sendBulkSms(
   numbers: string[],
   message: string,
@@ -76,22 +72,20 @@ export async function sendBulkSms(
   const clean = numbers.map(n => normalizePhone(n)).filter((n): n is string => n !== null);
   if (!clean.length) return { sent: 0, failed: numbers.length, sampleError: `All numbers invalid. Sample: "${numbers[0]}"` };
 
+  const BATCH = 1000;
   let sent = 0;
-  let failed = 0;
+  let failed = numbers.length - clean.length; // count invalid ones as failed
   let sampleError: string | undefined;
-  let skipSenderName = false;
 
-  for (const n of clean) {
-    const r = await sendSms(n, message, { skipSenderName });
-    if (r.ok) {
-      sent++;
+  for (let i = 0; i < clean.length; i += BATCH) {
+    const batch  = clean.slice(i, i + BATCH);
+    const result = await sendSmsBatch(batch, message);
+    if (result.ok) {
+      sent += result.count;
     } else {
-      failed++;
-      if (!sampleError) sampleError = r.error;
-      // If sender name caused the failure, skip it for all remaining
-      if (!skipSenderName && process.env.SEMAPHORE_SENDER_NAME) skipSenderName = true;
+      failed += batch.length;
+      if (!sampleError) sampleError = result.error;
     }
-    await new Promise(res => setTimeout(res, 5000));
   }
 
   return { sent, failed, ...(sampleError ? { sampleError } : {}) };

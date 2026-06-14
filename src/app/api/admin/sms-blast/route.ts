@@ -1,9 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/adminAuth';
-import { sendSms, normalizePhone } from '@/lib/sms';
+import { normalizePhone, sendSmsBatch } from '@/lib/sms';
 
 export const dynamic    = 'force-dynamic';
-export const maxDuration = 300; // allow up to 5 min for large blasts (Vercel Pro)
+export const maxDuration = 60;
 
 // GET — return recipient counts per group
 export async function GET() {
@@ -34,7 +34,7 @@ export async function GET() {
   return Response.json({ allCustomers, maintenanceDue, warrantyExpiring, allLeads, importedContacts });
 }
 
-// POST — stream progress: one SMS at a time, newline-delimited JSON
+// POST — stream batch progress (up to 1,000 numbers per Semaphore call)
 export async function POST(request: Request) {
   if (!await requireAdmin()) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -77,41 +77,47 @@ export async function POST(request: Request) {
 
   if (!rawNumbers.length) return Response.json({ error: 'No recipients found' }, { status: 400 });
 
-  // Filter to valid numbers up front so total count is accurate
-  const numbers = rawNumbers.map(n => normalizePhone(n) ?? n).filter(n => normalizePhone(n) !== null || true);
-  // (keep raw for display; sendSms normalizes internally)
+  // Normalize up front — invalid numbers are counted as failed immediately
+  const normalized = rawNumbers.map(n => normalizePhone(n)).filter((n): n is string => n !== null);
+  const invalidCount = rawNumbers.length - normalized.length;
 
-  const enc = new TextEncoder();
+  if (!normalized.length) {
+    return Response.json({ error: `All ${rawNumbers.length} phone numbers are in an unrecognized format.` }, { status: 400 });
+  }
+
+  const enc  = new TextEncoder();
   const push = (obj: object) => enc.encode(JSON.stringify(obj) + '\n');
+
+  const BATCH = 1000;
 
   const stream = new ReadableStream({
     async start(controller) {
       let sent   = 0;
-      let failed = 0;
+      let failed = invalidCount;
       const total = rawNumbers.length;
+      let sampleError: string | undefined;
 
-      for (let i = 0; i < total; i++) {
-        const number = rawNumbers[i];
-        const result = await sendSms(number, message.trim(), { skipSenderName: true });
+      for (let i = 0; i < normalized.length; i += BATCH) {
+        const batch     = normalized.slice(i, i + BATCH);
+        const batchEnd  = Math.min(i + BATCH, normalized.length);
+        const result    = await sendSmsBatch(batch, message.trim());
 
         if (result.ok) {
-          sent++;
+          sent += result.count;
         } else {
-          failed++;
+          failed += batch.length;
+          if (!sampleError) sampleError = result.error;
         }
 
         controller.enqueue(push({
-          i: i + 1,
+          i: batchEnd + invalidCount,
           total,
-          number,
+          batchSize: batch.length,
           ok: result.ok,
           ...(result.error ? { error: result.error } : {}),
           sent,
           failed,
         }));
-
-        // 5 s between sends to stay well under Semaphore's rate limit
-        if (i < total - 1) await new Promise(r => setTimeout(r, 5000));
       }
 
       controller.enqueue(push({ done: true, sent, failed, total }));
