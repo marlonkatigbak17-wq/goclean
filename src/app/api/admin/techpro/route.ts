@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/adminAuth';
 import crypto from 'crypto';
 
 function generateLicenseKey(): string {
@@ -15,6 +16,7 @@ function addMonths(date: Date, months: number): Date {
 
 // GET — list all licenses
 export async function GET() {
+  if (!await requireAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const licenses = await prisma.techProLicense.findMany({
     orderBy: { createdAt: 'desc' },
   });
@@ -23,6 +25,7 @@ export async function GET() {
 
 // POST — manually create a license key
 export async function POST(req: NextRequest) {
+  if (!await requireAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { plan, phone, name, email } = await req.json();
   const now = new Date();
   const key = generateLicenseKey();
@@ -46,6 +49,7 @@ export async function POST(req: NextRequest) {
 
 // PATCH — toggle active/inactive
 export async function PATCH(req: NextRequest) {
+  if (!await requireAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id, isActive } = await req.json();
   const updated = await prisma.techProLicense.update({
     where: { id },

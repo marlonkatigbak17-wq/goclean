@@ -64,10 +64,14 @@ export default function LeadsPage() {
 
   async function fetchLeads() {
     setLoading(true);
-    const res = await fetch('/api/admin/leads');
-    const data = await res.json();
-    setLeads(Array.isArray(data) ? data : []);
-    setLoading(false);
+    try {
+      const res = await fetch('/api/admin/leads');
+      if (!res.ok) { if (res.status === 401) window.location.href = '/admin/login'; return; }
+      const data = await res.json();
+      setLeads(Array.isArray(data) ? data : []);
+    } catch { /* network error — leave list empty */ } finally {
+      setLoading(false);
+    }
   }
 
   function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(''), 3000); }

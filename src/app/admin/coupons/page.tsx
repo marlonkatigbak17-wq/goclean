@@ -24,7 +24,7 @@ export default function AdminCouponsPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('/api/admin/coupons').then((r) => r.json()).then((d) => setCoupons(d.coupons ?? [])).finally(() => setLoading(false));
+    fetch('/api/admin/coupons').then((r) => r.ok ? r.json() : null).then((d) => { if (d) setCoupons(d.coupons ?? []); }).finally(() => setLoading(false));
   }, []);
 
   async function createCoupon(e: React.FormEvent) {
@@ -36,13 +36,14 @@ export default function AdminCouponsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     });
-    const data = await res.json();
+    let data: { coupon?: unknown; error?: string } = {};
+    try { data = await res.json(); } catch { /* non-JSON */ }
     if (res.ok) {
-      setCoupons((prev) => [data.coupon, ...prev]);
+      setCoupons((prev) => [data.coupon as never, ...prev]);
       setForm({ code: '', discountType: 'percentage', discountValue: '', minOrder: '', maxUses: '' });
       setShowForm(false);
     } else {
-      setError(data.error);
+      setError(data.error ?? 'Failed to create coupon');
     }
     setSaving(false);
   }

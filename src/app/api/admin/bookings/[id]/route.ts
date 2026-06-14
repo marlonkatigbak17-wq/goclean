@@ -94,6 +94,10 @@ async function sendBookingNotifications(booking: {
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!await requireAdmin()) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
-  await prisma.booking.delete({ where: { id } });
-  return Response.json({ success: true });
+  try {
+    await prisma.booking.delete({ where: { id } });
+    return Response.json({ success: true });
+  } catch {
+    return Response.json({ error: 'Failed to delete booking' }, { status: 500 });
+  }
 }

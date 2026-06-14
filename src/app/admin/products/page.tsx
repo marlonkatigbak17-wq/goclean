@@ -112,6 +112,11 @@ export default function AdminProductsPage() {
   function handleImagePick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      showToast('Image must be under 4MB');
+      e.target.value = '';
+      return;
+    }
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
   }
@@ -122,12 +127,13 @@ export default function AdminProductsPage() {
     fd.append('file', imageFile);
     fd.append('slug', slug);
     const res = await fetch('/api/upload', { method: 'POST', body: fd });
-    const data = await res.json();
+    let data: { url?: string; error?: string } = {};
+    try { data = await res.json(); } catch { /* non-JSON error (e.g. 413) */ }
     if (!res.ok || data.error) {
-      showToast(`Upload failed: ${data.error || res.statusText}`);
+      showToast(res.status === 413 ? 'Image too large — max 4MB' : `Upload failed: ${data.error || res.statusText}`);
       return null;
     }
-    return data.url;
+    return data.url ?? null;
   }
 
   async function handleSave() {

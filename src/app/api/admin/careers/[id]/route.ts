@@ -15,14 +15,22 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (key in body) data[key] = body[key];
   }
 
-  const app = await prisma.jobApplication.update({ where: { id }, data });
-  return Response.json(app);
+  try {
+    const app = await prisma.jobApplication.update({ where: { id }, data });
+    return Response.json(app);
+  } catch {
+    return Response.json({ error: 'Failed to update application' }, { status: 500 });
+  }
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!await requireAdmin()) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
-  await prisma.jobApplication.delete({ where: { id } });
-  return Response.json({ success: true });
+  try {
+    await prisma.jobApplication.delete({ where: { id } });
+    return Response.json({ success: true });
+  } catch {
+    return Response.json({ error: 'Failed to delete application' }, { status: 500 });
+  }
 }
