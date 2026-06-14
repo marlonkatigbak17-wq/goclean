@@ -15,17 +15,18 @@ async function callSemaphore(
   number: string,   // one number or comma-separated list
   message: string,
 ): Promise<{ ok: boolean; status: number; error?: string }> {
-  // Semaphore docs show form-encoded (curl --data), not JSON
-  const payload = new URLSearchParams({ apikey: apiKey, number, message });
+  // Build body manually so commas in `number` are NOT percent-encoded
+  // (URLSearchParams encodes commas as %2C which Semaphore doesn't accept for bulk)
+  const body = `apikey=${encodeURIComponent(apiKey)}&number=${number}&message=${encodeURIComponent(message)}`;
   try {
     const res  = await fetch('https://api.semaphore.co/api/v4/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: payload.toString(),
+      body,
     });
-    const body = await res.json().catch(() => null) as Record<string, unknown> | null;
+    const resBody = await res.json().catch(() => null) as Record<string, unknown> | null;
     if (res.ok) return { ok: true, status: res.status };
-    const err = (body?.message ?? body?.error ?? JSON.stringify(body) ?? `HTTP ${res.status}`) as string;
+    const err = (resBody?.message ?? resBody?.error ?? JSON.stringify(resBody) ?? `HTTP ${res.status}`) as string;
     return { ok: false, status: res.status, error: err };
   } catch (e) {
     return { ok: false, status: 0, error: String(e) };
