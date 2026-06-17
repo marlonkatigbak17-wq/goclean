@@ -60,6 +60,7 @@ model Booking {
   installationDate    String      @default("")
   partsUsed           Json?
   photos              String[]
+  preWorkChecklist    Json?
   rebookReminderSent  Boolean     @default(false)
   createdAt           DateTime    @default(now())
 }
