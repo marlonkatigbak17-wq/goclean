@@ -102,18 +102,15 @@ export async function POST(request: Request) {
         const batchEnd  = Math.min(i + BATCH, normalized.length);
         const result    = await sendSmsBatch(batch, message.trim());
 
-        if (result.ok) {
-          sent += result.count;
-        } else {
-          failed += batch.length;
-          if (!sampleError) sampleError = result.error;
-        }
+        sent   += result.sent;
+        failed += result.failed;
+        if (!sampleError) sampleError = result.error;
 
         controller.enqueue(push({
           i: batchEnd + invalidCount,
           total,
           batchSize: batch.length,
-          ok: result.ok,
+          ok: result.failed === 0,
           ...(result.error ? { error: result.error } : {}),
           sent,
           failed,

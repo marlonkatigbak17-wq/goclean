@@ -47,20 +47,33 @@ export async function sendSms(
   return result.ok ? { ok: true } : { ok: false, error: result.error };
 }
 
-// Send to up to 1,000 numbers in a single Semaphore API call (their recommended bulk method).
-// Returns how many were accepted and the first error if any.
+// Semaphore's single-call comma-separated bulk endpoint has proven unreliable for this
+// account (it fails the whole batch even when every number is valid), so send one at a
+// time with limited concurrency instead. Slower, but each send succeeds/fails on its own.
+const CONCURRENCY = 5;
+
 export async function sendSmsBatch(
   numbers: string[],   // already normalized (639XXXXXXXXX)
   message: string,
-): Promise<{ ok: boolean; count: number; error?: string }> {
+): Promise<{ sent: number; failed: number; error?: string }> {
   const apiKey = process.env.SEMAPHORE_API_KEY;
-  if (!apiKey) return { ok: false, count: 0, error: 'SEMAPHORE_API_KEY not set' };
-  if (!numbers.length) return { ok: false, count: 0, error: 'No numbers' };
+  if (!apiKey) return { sent: 0, failed: numbers.length, error: 'SEMAPHORE_API_KEY not set' };
+  if (!numbers.length) return { sent: 0, failed: 0 };
 
-  const result = await callSemaphore(apiKey, numbers.join(','), message);
-  return result.ok
-    ? { ok: true, count: numbers.length }
-    : { ok: false, count: 0, error: result.error };
+  let sent = 0;
+  let failed = 0;
+  let error: string | undefined;
+
+  for (let i = 0; i < numbers.length; i += CONCURRENCY) {
+    const chunk   = numbers.slice(i, i + CONCURRENCY);
+    const results = await Promise.all(chunk.map(n => callSemaphore(apiKey, n, message)));
+    for (const r of results) {
+      if (r.ok) sent++;
+      else { failed++; if (!error) error = r.error; }
+    }
+  }
+
+  return { sent, failed, ...(error ? { error } : {}) };
 }
 
 // Used by cron/reminder routes
@@ -74,21 +87,12 @@ export async function sendBulkSms(
   const clean = numbers.map(n => normalizePhone(n)).filter((n): n is string => n !== null);
   if (!clean.length) return { sent: 0, failed: numbers.length, sampleError: `All numbers invalid. Sample: "${numbers[0]}"` };
 
-  const BATCH = 1000;
-  let sent = 0;
-  let failed = numbers.length - clean.length; // count invalid ones as failed
-  let sampleError: string | undefined;
+  const failed = numbers.length - clean.length; // count invalid ones as failed
+  const result = await sendSmsBatch(clean, message);
 
-  for (let i = 0; i < clean.length; i += BATCH) {
-    const batch  = clean.slice(i, i + BATCH);
-    const result = await sendSmsBatch(batch, message);
-    if (result.ok) {
-      sent += result.count;
-    } else {
-      failed += batch.length;
-      if (!sampleError) sampleError = result.error;
-    }
-  }
-
-  return { sent, failed, ...(sampleError ? { sampleError } : {}) };
+  return {
+    sent: result.sent,
+    failed: failed + result.failed,
+    ...(result.error ? { sampleError: result.error } : {}),
+  };
 }
