@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Camera, CheckCircle2, ClipboardList, Package, Wrench, Upload } from 'lucide-react';
+import { ArrowLeft, Camera, CheckCircle2, ClipboardCheck, ClipboardList, Package, Wrench, Upload } from 'lucide-react';
 
 type Job = {
   id: string; name: string; phone: string; email: string; service: string;
@@ -9,6 +9,7 @@ type Job = {
   adminNotes: string; unitModel: string; installationDate: string;
   partsUsed: { name: string; qty: number }[] | null; photos: string[];
   preWorkChecklist: { customerSignature?: string } | null;
+  installationChecklist: { customerSignature?: string } | null;
 };
 
 const STATUS_FLOW = ['pending', 'confirmed', 'completed'];
@@ -149,6 +150,21 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           </div>
           <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${job.preWorkChecklist?.customerSignature ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
             {job.preWorkChecklist?.customerSignature ? 'Completed' : 'Pending'}
+          </span>
+        </button>
+
+        {/* Installation Checkout */}
+        <button
+          onClick={() => router.push(`/technician/jobs/${id}/installation-checkout`)}
+          className="w-full bg-white border rounded-2xl p-5 flex items-center gap-3 text-left hover:border-[#1e3a5f]"
+        >
+          <ClipboardCheck size={18} className="text-[#1e3a5f]" />
+          <div className="flex-1">
+            <div className="font-bold text-[#1e3a5f]">Installation Checkout</div>
+            <div className="text-xs text-gray-500">Install checks, system readings, customer signature</div>
+          </div>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${job.installationChecklist?.customerSignature ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+            {job.installationChecklist?.customerSignature ? 'Completed' : 'Pending'}
           </span>
         </button>
 

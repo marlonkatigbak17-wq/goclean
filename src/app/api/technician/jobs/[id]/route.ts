@@ -23,13 +23,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const booking = await prisma.booking.findUnique({ where: { id } });
   if (!booking || booking.technicianId !== techId) return Response.json({ error: 'Not found' }, { status: 404 });
 
-  const { status, photos, partsUsed, adminNotes, preWorkChecklist } = await request.json();
+  const { status, photos, partsUsed, adminNotes, preWorkChecklist, installationChecklist } = await request.json();
   const data: Record<string, unknown> = {};
   if (status) data.status = status;
   if (photos) data.photos = photos;
   if (partsUsed) data.partsUsed = partsUsed;
   if (adminNotes) data.adminNotes = adminNotes;
   if (preWorkChecklist) data.preWorkChecklist = preWorkChecklist;
+  if (installationChecklist) data.installationChecklist = installationChecklist;
 
   const updated = await prisma.booking.update({ where: { id }, data });
   return Response.json(updated);
