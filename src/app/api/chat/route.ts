@@ -53,6 +53,7 @@ SERVICES & PRICES
 Aircon Cleaning (per unit):
 - Wall Mounted: ₱1,500
 - Window Type: ₱800
+- Window Type Inverter: ₱1,100
 - Ceiling Mounted: ₱2,500
 - Ceiling Cassette: ₱3,500
 - Floor Mounted: ₱2,500
