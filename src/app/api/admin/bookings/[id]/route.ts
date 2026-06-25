@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/adminAuth';
 import { sendSms } from '@/lib/sms';
+import bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +33,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   // Respond immediately — notifications are fire-and-forget
   if (status !== undefined && (status === 'confirmed' || status === 'completed')) {
     sendBookingNotifications(booking, status).catch(() => {});
+  }
+  if (status === 'confirmed' && !booking.userId) {
+    linkOrCreateCustomer(booking).catch((e) => console.error('CRM customer link error:', e));
   }
   if ((preferredDate !== undefined || preferredTime !== undefined) && booking.phone) {
     const when = booking.preferredTime ? `${booking.preferredDate}, ${booking.preferredTime}` : booking.preferredDate;
@@ -94,6 +99,32 @@ async function sendBookingNotifications(booking: {
   };
   if (smsMessages[status] && booking.phone) {
     sendSms(booking.phone, smsMessages[status]).catch(() => {});
+  }
+}
+
+// Confirmed walk-in/manual bookings have no userId yet — find or create the matching
+// CRM customer record so they show up in /admin/customers going forward.
+async function linkOrCreateCustomer(booking: {
+  id: string; name: string; email: string; phone: string;
+}) {
+  let user = booking.email
+    ? await prisma.user.findUnique({ where: { email: booking.email } })
+    : null;
+  if (!user && booking.phone) {
+    user = await prisma.user.findFirst({ where: { phone: booking.phone } });
+  }
+
+  if (!user && booking.email) {
+    // Random, never-shared password — this account exists for CRM listing, not immediate login.
+    // No password-reset flow exists yet, so this is unguessable until one is added.
+    const hashed = await bcrypt.hash(randomBytes(32).toString('hex'), 10);
+    user = await prisma.user.create({
+      data: { name: booking.name, email: booking.email, phone: booking.phone || '', password: hashed },
+    });
+  }
+
+  if (user) {
+    await prisma.booking.update({ where: { id: booking.id }, data: { userId: user.id } });
   }
 }
 
