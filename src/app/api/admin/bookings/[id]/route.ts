@@ -8,7 +8,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!await requireAdmin()) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const body = await request.json();
-  const { status, adminNotes, technicianId, partsUsed } = body;
+  const { status, adminNotes, technicianId, partsUsed, preferredDate, preferredTime } = body;
 
   let booking;
   try {
@@ -19,6 +19,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         ...(adminNotes !== undefined && { adminNotes }),
         ...(technicianId !== undefined && { technicianId: technicianId || null }),
         ...(partsUsed !== undefined && { partsUsed }),
+        ...(preferredDate !== undefined && { preferredDate }),
+        ...(preferredTime !== undefined && { preferredTime }),
       },
     });
   } catch (e) {
@@ -29,6 +31,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   // Respond immediately — notifications are fire-and-forget
   if (status !== undefined && (status === 'confirmed' || status === 'completed')) {
     sendBookingNotifications(booking, status).catch(() => {});
+  }
+  if ((preferredDate !== undefined || preferredTime !== undefined) && booking.phone) {
+    const when = booking.preferredTime ? `${booking.preferredDate}, ${booking.preferredTime}` : booking.preferredDate;
+    sendSms(booking.phone, `Hi ${booking.name}, your GoClean ${booking.service} booking has been rescheduled to ${when}. Questions? Call 0917 117 8605. - GoClean Aircon`).catch(() => {});
   }
 
   return Response.json({ booking });

@@ -1,18 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { StickyNote, UserCog, Package, Trash2, Plus, X } from 'lucide-react';
+import { StickyNote, UserCog, Package, Trash2, Plus, X, CalendarClock } from 'lucide-react';
 
 const SERVICES = [
   'Aircon Installation', 'Aircon Cleaning', 'Aircon Repair',
   'Preventive Maintenance', 'Commercial HVAC', 'Controls & Automation', 'Other',
 ];
 
+const TIME_SLOTS = [
+  '8:00 AM - 10:00 AM', '10:00 AM - 12:00 NN', '1:00 PM - 3:00 PM',
+  '3:00 PM - 5:00 PM', '5:00 PM Onward', 'Overnight',
+];
+
 const emptyNew = () => ({ name: '', phone: '', email: '', service: '', address: '', date: '', notes: '' });
 
 type Booking = {
   id: string; name: string; phone: string; email: string; service: string;
-  address: string; preferredDate: string; notes: string; adminNotes: string;
+  address: string; preferredDate: string; preferredTime: string; notes: string; adminNotes: string;
   status: string; createdAt: string; technicianId: string | null;
   partsUsed: { name: string; qty: number }[] | null; photos: string[];
 };
@@ -34,6 +39,10 @@ export default function AdminBookingsPage() {
   const [loading, setLoading]       = useState(true);
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [noteText, setNoteText]     = useState('');
+  const [reschedulingId, setReschedulingId] = useState<string | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [rescheduleTime, setRescheduleTime] = useState('');
+  const [rescheduling, setRescheduling]     = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selected, setSelected]     = useState<Set<string>>(new Set());
   const [confirmIds, setConfirmIds] = useState<string[]>([]);
@@ -136,6 +145,40 @@ export default function AdminBookingsPage() {
     setEditingNote(null);
   }
 
+  function openReschedule(b: Booking) {
+    setReschedulingId(b.id);
+    // Booking dates are freeform text historically — only prefill the picker if it's already a clean ISO date
+    setRescheduleDate(/^\d{4}-\d{2}-\d{2}$/.test(b.preferredDate) ? b.preferredDate : '');
+    setRescheduleTime(TIME_SLOTS.includes(b.preferredTime) ? b.preferredTime : '');
+  }
+
+  function conflictsOnDate(date: string, excludeId: string) {
+    if (!date) return [];
+    return bookings.filter(b =>
+      b.id !== excludeId && b.preferredDate === date && b.status !== 'cancelled'
+    );
+  }
+
+  async function saveReschedule(id: string) {
+    if (!rescheduleDate) { showToast('Please pick a date'); return; }
+    setRescheduling(true);
+    const res = await fetch(`/api/admin/bookings/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ preferredDate: rescheduleDate, preferredTime: rescheduleTime }),
+    });
+    if (res.status === 401) { window.location.href = '/admin/login'; return; }
+    if (res.ok) {
+      const data = await res.json();
+      setBookings(prev => prev.map(b => b.id === id ? { ...b, ...data.booking } : b));
+      setReschedulingId(null);
+      showToast('Booking rescheduled!');
+    } else {
+      showToast('Failed to reschedule — please try again');
+    }
+    setRescheduling(false);
+  }
+
   function toggleSelect(id: string) {
     setSelected(prev => {
       const next = new Set(prev);
@@ -223,9 +266,57 @@ export default function AdminBookingsPage() {
                   </div>
                   <div className="text-right text-sm">
                     <div className="font-semibold text-[#1e3a5f]">{b.service}</div>
-                    <div className="text-xs text-gray-400">{b.preferredDate}</div>
+                    <div className="text-xs text-gray-400">{b.preferredDate}{b.preferredTime ? `, ${b.preferredTime}` : ''}</div>
+                    <button onClick={() => openReschedule(b)}
+                      className="mt-1 flex items-center gap-1 text-xs text-[#1e3a5f] hover:underline ml-auto">
+                      <CalendarClock size={12} /> Reschedule
+                    </button>
                   </div>
                 </div>
+
+                {reschedulingId === b.id && (
+                  <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      <input type="date" value={rescheduleDate} onChange={e => setRescheduleDate(e.target.value)}
+                        className="border rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#1e3a5f]" />
+                      <select value={rescheduleTime} onChange={e => setRescheduleTime(e.target.value)}
+                        className="border rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-[#1e3a5f] bg-white">
+                        <option value="">— Time slot —</option>
+                        {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                      <button onClick={() => saveReschedule(b.id)} disabled={rescheduling}
+                        className="px-3 py-1.5 text-xs bg-[#1e3a5f] text-white rounded-lg font-medium hover:bg-[#152d4a] disabled:opacity-50">
+                        {rescheduling ? 'Saving...' : 'Save'}
+                      </button>
+                      <button onClick={() => setReschedulingId(null)}
+                        className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700">
+                        Cancel
+                      </button>
+                    </div>
+                    {rescheduleDate && (() => {
+                      const conflicts = conflictsOnDate(rescheduleDate, b.id);
+                      if (conflicts.length === 0) {
+                        return <div className="text-xs text-green-600">✓ No other bookings on this date — looks open.</div>;
+                      }
+                      const sameSlot = rescheduleTime ? conflicts.filter(c => c.preferredTime === rescheduleTime) : [];
+                      return (
+                        <div className="text-xs">
+                          {sameSlot.length > 0 && (
+                            <div className="text-red-600 font-semibold mb-1">⚠ {sameSlot.length} booking{sameSlot.length > 1 ? 's' : ''} already in this exact time slot:</div>
+                          )}
+                          <div className="text-gray-500 mb-1">{conflicts.length} other booking{conflicts.length > 1 ? 's' : ''} already on this date:</div>
+                          <ul className="space-y-0.5">
+                            {conflicts.map(c => (
+                              <li key={c.id} className="text-gray-600">
+                                • {c.name} — {c.preferredTime || 'no time set'} {c.technicianId && techs.find(t => t.id === c.technicianId) ? `(${techs.find(t => t.id === c.technicianId)?.name})` : ''}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
 
                 <div className="text-xs text-gray-500 mb-3 pl-7">{b.address}{b.notes ? ` · Notes: ${b.notes}` : ''}</div>
 
