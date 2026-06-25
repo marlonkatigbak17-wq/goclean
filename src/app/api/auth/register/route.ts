@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       data: { name, email, password: hashed, phone: phone || '' },
     });
 
-    const token = await signToken({ userId: user.id, email: user.email, name: user.name });
+    const token = await signToken({ userId: user.id, email: user.email!, name: user.name });
 
     const res = Response.json({ success: true, user: { id: user.id, name: user.name, email: user.email } });
     res.headers.set('Set-Cookie', `customer_auth=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=2592000`);

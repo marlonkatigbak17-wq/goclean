@@ -114,12 +114,12 @@ async function linkOrCreateCustomer(booking: {
     user = await prisma.user.findFirst({ where: { phone: booking.phone } });
   }
 
-  if (!user && booking.email) {
+  if (!user && (booking.email || booking.phone)) {
     // Random, never-shared password — this account exists for CRM listing, not immediate login.
     // No password-reset flow exists yet, so this is unguessable until one is added.
     const hashed = await bcrypt.hash(randomBytes(32).toString('hex'), 10);
     user = await prisma.user.create({
-      data: { name: booking.name, email: booking.email, phone: booking.phone || '', password: hashed },
+      data: { name: booking.name, email: booking.email || null, phone: booking.phone || '', password: hashed },
     });
   }
 
