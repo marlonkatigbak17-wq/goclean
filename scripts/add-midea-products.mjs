@@ -97,7 +97,8 @@ const products = series.flatMap((s) =>
 async function main() {
   console.log('Adding', products.length, 'Midea products...');
   for (const p of products) {
-    const { slug, ...data } = p;
+    // Keep existing images on update — photos were moved to Vercel Blob after the first run.
+    const { slug, images: _images, ...data } = p;
     await prisma.product.upsert({ where: { slug }, update: data, create: p });
     console.log(' ✓', p.name, peso(p.price));
   }
