@@ -78,6 +78,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('slug', `job-${id}`);
     const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
     if (uploadRes.ok) {
       const { url } = await uploadRes.json();

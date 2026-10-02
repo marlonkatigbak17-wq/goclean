@@ -1,6 +1,28 @@
+import { jwtVerify } from 'jose';
+import { cookies } from 'next/headers';
+import { requireAdmin } from '@/lib/adminAuth';
+
 export const dynamic = 'force-dynamic';
 
+// Used by the admin product editor and the technician job photo upload.
+async function isTechnician(): Promise<boolean> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('tech_auth')?.value;
+    if (!token) return false;
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+    const { payload } = await jwtVerify(token, secret);
+    return typeof payload.techId === 'string';
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
+  if (!(await requireAdmin()) && !(await isTechnician())) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const formData = await request.formData();
   const file = formData.get('file') as File | null;
   const slug = formData.get('slug') as string | null;
